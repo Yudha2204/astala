@@ -19,6 +19,7 @@ class PeminjamanController extends BaseController
     public function items()
     {
         $search = trim((string) $this->request->getGet('search'));
+        $status = trim((string) $this->request->getGet('status'));
 
         $model = new BarangModel();
         if ($search !== '') {
@@ -26,6 +27,10 @@ class PeminjamanController extends BaseController
                 ->like('nama_barang', $search)
                 ->orLike('nomor_seri', $search)
                 ->groupEnd();
+        }
+
+        if ($status !== '') {
+            $model->where('status_ketersediaan', $status);
         }
 
         $barangs = $model
@@ -52,7 +57,7 @@ class PeminjamanController extends BaseController
             'user' => session('user'),
             'tersedia' => $tersedia,
             'tidakTersedia' => $tidakTersedia,
-            'query' => ['search' => $search],
+            'query' => ['search' => $search, 'status' => $status],
         ]);
     }
 

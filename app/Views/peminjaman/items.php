@@ -11,7 +11,7 @@ $imageUrl = static fn (array $barang): ?string => ! empty($barang['fotos'][0]['f
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Pinjam Barang</h1>
             <p class="text-gray-500 dark:text-gray-400">Pilih barang yang ingin dipinjam</p>
         </div>
-        <form action="<?= site_url('peminjaman/items') ?>" method="GET" class="flex gap-2 flex-1 max-w-md">
+        <form action="<?= site_url('peminjaman/items') ?>" method="GET" class="flex flex-col sm:flex-row gap-2 flex-1 max-w-xl">
             <div class="relative flex-1">
                 <input type="text" name="search" id="searchPeminjaman" value="<?= esc($query['search'] ?? '') ?>" placeholder="Cari barang..."
                     class="w-full pl-4 pr-12 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
@@ -19,6 +19,11 @@ $imageUrl = static fn (array $barang): ?string => ! empty($barang['fotos'][0]['f
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
                 </button>
             </div>
+            <select name="status" id="statusPeminjaman" class="w-full sm:w-auto px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer">
+                <option value="">Semua Status</option>
+                <option value="tersedia" <?= ($query['status'] ?? '') === 'tersedia' ? 'selected' : '' ?>>Tersedia</option>
+                <option value="dipinjam" <?= ($query['status'] ?? '') === 'dipinjam' ? 'selected' : '' ?>>Sedang Dipinjam</option>
+            </select>
             <button type="submit" class="px-6 py-2.5 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 shadow-lg shadow-blue-500/20">Cari</button>
         </form>
     </div>
@@ -127,26 +132,36 @@ $imageUrl = static fn (array $barang): ?string => ! empty($barang['fotos'][0]['f
 
 <script>
 const searchInput = document.getElementById('searchPeminjaman');
+const statusDropdown = document.getElementById('statusPeminjaman');
 const itemsContainer = document.getElementById('items-container');
 let debounceTimer;
+
+function fetchItems() {
+    clearTimeout(debounceTimer);
+    const query = searchInput ? searchInput.value : '';
+    const status = statusDropdown ? statusDropdown.value : '';
+    debounceTimer = setTimeout(() => {
+        fetch(`<?= site_url('peminjaman/items') ?>?search=${encodeURIComponent(query)}&status=${encodeURIComponent(status)}`)
+            .then(response => response.text())
+            .then(html => {
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const next = doc.getElementById('items-container');
+                if (next) itemsContainer.innerHTML = next.innerHTML;
+                const url = new URL(window.location);
+                if (query) url.searchParams.set('search', query);
+                else url.searchParams.delete('search');
+                if (status) url.searchParams.set('status', status);
+                else url.searchParams.delete('status');
+                window.history.replaceState({}, '', url);
+            });
+    }, 300);
+}
+
 if (searchInput && itemsContainer) {
-    searchInput.addEventListener('input', function (event) {
-        clearTimeout(debounceTimer);
-        const query = event.target.value;
-        debounceTimer = setTimeout(() => {
-            fetch(`<?= site_url('peminjaman/items') ?>?search=${encodeURIComponent(query)}`)
-                .then(response => response.text())
-                .then(html => {
-                    const doc = new DOMParser().parseFromString(html, 'text/html');
-                    const next = doc.getElementById('items-container');
-                    if (next) itemsContainer.innerHTML = next.innerHTML;
-                    const url = new URL(window.location);
-                    if (query) url.searchParams.set('search', query);
-                    else url.searchParams.delete('search');
-                    window.history.replaceState({}, '', url);
-                });
-        }, 300);
-    });
+    searchInput.addEventListener('input', fetchItems);
+    if (statusDropdown) {
+        statusDropdown.addEventListener('change', fetchItems);
+    }
     searchInput.closest('form').addEventListener('submit', event => event.preventDefault());
 }
 </script>
