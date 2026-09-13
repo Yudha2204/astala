@@ -77,6 +77,16 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
         $routes->get('report/pdf/(:segment)', 'ReportController::exportPDF/$1', ['filter' => 'canEdit']);
         $routes->get('report/excel/(:segment)', 'ReportController::exportExcel/$1', ['filter' => 'canEdit']);
 
+        $routes->group('users', ['filter' => 'role:admin'], static function (RouteCollection $routes) {
+            $routes->get('/', 'UserController::index');
+            $routes->get('add', 'UserController::showAdd');
+            $routes->post('add', 'UserController::add');
+            $routes->get('edit/(:num)', 'UserController::showEdit/$1');
+            $routes->post('edit/(:num)', 'UserController::update/$1');
+            $routes->post('toggle-active/(:num)', 'UserController::toggleActive/$1');
+            $routes->post('delete/(:num)', 'UserController::delete/$1');
+        });
+
         $routes->group('gudang', ['filter' => 'canEdit'], static function (RouteCollection $routes) {
             $routes->get('/', 'GudangController::index');
             $routes->get('add', 'GudangController::showAdd');

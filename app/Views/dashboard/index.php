@@ -19,7 +19,7 @@ function astala_status_label(string $status): string
     ][$status] ?? ucfirst($status);
 }
 
-function astala_stat_card(string $label, int|string|null $value, string $tone, string $iconPath): string
+function astala_stat_card(string $label, int|string|null $value, string $tone, string $iconPath, ?string $link = null): string
 {
     $tones = [
         'blue' => ['border-blue-200 dark:border-blue-500/30', 'bg-blue-100 dark:bg-blue-500/10', 'text-blue-600 dark:text-blue-400'],
@@ -34,12 +34,17 @@ function astala_stat_card(string $label, int|string|null $value, string $tone, s
     ];
     [$border, $bg, $text] = $tones[$tone] ?? $tones['blue'];
 
-    return '<div class="bg-white dark:bg-gray-800 border ' . $border . ' rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">'
-        . '<div class="flex items-center gap-4">'
+    $content = '<div class="flex items-center gap-4">'
         . '<div class="w-12 h-12 ' . $bg . ' rounded-xl flex items-center justify-center">'
         . '<svg class="w-6 h-6 ' . $text . '" fill="none" stroke="currentColor" viewBox="0 0 24 24">' . $iconPath . '</svg>'
         . '</div><div><p class="text-2xl font-bold text-gray-900 dark:text-white">' . esc((string) ($value ?? 0)) . '</p>'
-        . '<p class="text-sm text-gray-500 dark:text-gray-400">' . esc($label) . '</p></div></div></div>';
+        . '<p class="text-sm text-gray-500 dark:text-gray-400">' . esc($label) . '</p></div></div>';
+
+    if ($link) {
+        return '<a href="' . esc($link) . '" class="block bg-white dark:bg-gray-800 border ' . $border . ' rounded-xl p-5 shadow-sm hover:shadow-md transition-all hover:scale-[1.01]">' . $content . '</a>';
+    }
+
+    return '<div class="bg-white dark:bg-gray-800 border ' . $border . ' rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">' . $content . '</div>';
 }
 
 $icons = [
@@ -80,14 +85,14 @@ $icons = [
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <?= astala_stat_card('Total Barang', $stats['totalBarang'] ?? 0, 'blue', $icons['box']) ?>
-            <?= astala_stat_card('Tersedia', $stats['barangTersedia'] ?? 0, 'green', $icons['check']) ?>
-            <?= astala_stat_card('Kondisi Baik', $stats['barangBaik'] ?? 0, 'teal', $icons['shield']) ?>
-            <?= astala_stat_card('Rusak', $stats['barangRusak'] ?? 0, 'red', $icons['warning']) ?>
+            <?= astala_stat_card('Total Barang', $stats['totalBarang'] ?? 0, 'blue', $icons['box'], site_url('barang')) ?>
+            <?= astala_stat_card('Tersedia', $stats['barangTersedia'] ?? 0, 'green', $icons['check'], site_url('barang') . '?status_ketersediaan=tersedia') ?>
+            <?= astala_stat_card('Kondisi Baik', $stats['barangBaik'] ?? 0, 'teal', $icons['shield'], site_url('barang') . '?status_kondisi=baik') ?>
+            <?= astala_stat_card('Rusak', $stats['barangRusak'] ?? 0, 'red', $icons['warning'], site_url('barang') . '?status_kondisi=rusak') ?>
 
-            <?= astala_stat_card('Peminjaman Aktif', $stats['activePeminjaman'] ?? 0, 'blue', $icons['clipboard']) ?>
+            <?= astala_stat_card('Peminjaman Aktif', $stats['activePeminjaman'] ?? 0, 'blue', $icons['clipboard'], site_url('admin/loans')) ?>
             <?php if ($dashboardType === 'admin'): ?>
-                <?= astala_stat_card('Total User', $stats['totalUser'] ?? 0, 'cyan', $icons['users']) ?>
+                <?= astala_stat_card('Total User', $stats['totalUser'] ?? 0, 'cyan', $icons['users'], site_url('admin/users')) ?>
             <?php endif ?>
             <?= astala_stat_card('Terlambat', count($overdueLoans ?? []), 'orange', $icons['warning']) ?>
         </div>
