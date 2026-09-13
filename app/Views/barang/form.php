@@ -73,7 +73,27 @@ $action = $isEdit ? site_url('barang/edit/' . $barang['id']) : site_url('barang/
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lokasi Penyimpanan</label>
-                <input type="text" name="lokasi_penyimpanan" value="<?= esc($barang['lokasi_penyimpanan'] ?? '') ?>" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Contoh: Gudang A, Rak 1, dll">
+                <?php $currentLokasi = old('lokasi_penyimpanan', $barang['lokasi_penyimpanan'] ?? ''); ?>
+                <select name="lokasi_penyimpanan" id="lokasi_penyimpanan" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">-- Pilih Lokasi Penyimpanan --</option>
+                    <?php 
+                    $gudangNames = [];
+                    foreach ($gudangs ?? [] as $g): 
+                        $gudangNames[] = $g['nama'];
+                    ?>
+                        <option value="<?= esc($g['nama']) ?>" <?= $currentLokasi === $g['nama'] ? 'selected' : '' ?>>
+                            <?= esc($g['nama']) ?><?= !empty($g['lokasi']) ? ' (' . esc($g['lokasi']) . ')' : '' ?>
+                        </option>
+                    <?php endforeach; ?>
+                    <?php if (!empty($currentLokasi) && !in_array($currentLokasi, $gudangNames, true)): ?>
+                        <option value="<?= esc($currentLokasi) ?>" selected><?= esc($currentLokasi) ?> (Lainnya)</option>
+                    <?php endif; ?>
+                </select>
+                <?php if (empty($gudangs)): ?>
+                    <p class="text-xs text-amber-600 dark:text-amber-400 mt-1.5">
+                        Belum ada data gudang. Silakan tambahkan di <a href="<?= site_url('admin/gudang') ?>" class="underline font-medium hover:text-amber-700 dark:hover:text-amber-300">Manajemen Gudang</a>.
+                    </p>
+                <?php endif; ?>
             </div>
 
             <div>

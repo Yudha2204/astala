@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\ActivityLogModel;
 use App\Models\BarangModel;
 use App\Models\FotoBarangModel;
+use App\Models\GudangModel;
 
 class BarangController extends BaseController
 {
@@ -58,6 +59,7 @@ class BarangController extends BaseController
             'user' => session('user'),
             'barang' => null,
             'existingNames' => $this->existingNames(),
+            'gudangs' => (new GudangModel())->orderBy('nama', 'ASC')->findAll(),
         ]);
     }
 
@@ -67,7 +69,7 @@ class BarangController extends BaseController
         $payload['status_ketersediaan'] = 'tersedia';
 
         if ((new BarangModel())->where('nomor_seri', $payload['nomor_seri'])->first()) {
-            return redirect()->to('/barang/add')->with('error', 'Nomor seri sudah terdaftar');
+            return redirect()->to('/barang/add')->with('error', 'Nomor seri sudah terdaftar')->withInput();
         }
 
         $barangModel = new BarangModel();
@@ -98,6 +100,7 @@ class BarangController extends BaseController
             'user' => session('user'),
             'barang' => $barang,
             'existingNames' => $this->existingNames(),
+            'gudangs' => (new GudangModel())->orderBy('nama', 'ASC')->findAll(),
         ]);
     }
 
@@ -119,7 +122,7 @@ class BarangController extends BaseController
             ->first();
 
         if ($duplicate) {
-            return redirect()->to('/barang/edit/' . $id)->with('error', 'Nomor seri sudah digunakan barang lain');
+            return redirect()->to('/barang/edit/' . $id)->with('error', 'Nomor seri sudah digunakan barang lain')->withInput();
         }
 
         $barangModel->update($id, $payload);

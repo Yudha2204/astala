@@ -25,6 +25,6 @@
     </label>
 
     <button type="submit">Masuk</button>
-    <a href="<?= site_url('auth/signup') ?>">Daftar akun mitra</a>
+    <a href="<?= site_url('auth/signup') ?>">Daftar akun</a>
 </form>
 <?= $this->endSection() ?>
