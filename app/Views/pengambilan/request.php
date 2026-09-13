@@ -23,7 +23,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nama Mitra</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nama Karyawan</label>
                     <input type="text" value="<?= esc($user['nama'] ?? '') ?>" disabled class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white">
                 </div>
                 <div>

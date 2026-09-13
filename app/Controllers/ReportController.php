@@ -76,7 +76,7 @@ class ReportController extends BaseController
         $rows = $builder->get()->getResultArray();
         $this->attachPengambilanItems($rows);
 
-        return $this->csv('laporan-pengambilan', ['ID', 'Nama Mitra', 'User Mitra', 'Petugas', 'Gudang', 'Status', 'Keperluan', 'Tanggal Request', 'Tanggal Pickup', 'Tanggal Selesai', 'Items'], $rows);
+        return $this->csv('laporan-pengambilan', ['ID', 'Nama Karyawan', 'User Karyawan', 'Petugas', 'Gudang', 'Status', 'Keperluan', 'Tanggal Request', 'Tanggal Pickup', 'Tanggal Selesai', 'Items'], $rows);
     }
 
     public function exportLogsFromTemplate()
@@ -191,7 +191,7 @@ class ReportController extends BaseController
             'pengambilan' => [
                 'name' => 'laporan-pengambilan',
                 'title' => 'Laporan Pengambilan Aset',
-                'headers' => ['ID', 'Nama Mitra', 'User Mitra', 'Petugas', 'Gudang', 'Status', 'Keperluan', 'Request', 'Pickup', 'Selesai', 'Items'],
+                'headers' => ['ID', 'Nama Karyawan', 'User Karyawan', 'Petugas', 'Gudang', 'Status', 'Keperluan', 'Request', 'Pickup', 'Selesai', 'Items'],
                 'rows' => $this->pengambilanRows(),
             ],
             'aset-material', 'aset_material' => [

@@ -77,7 +77,7 @@ class AuthController extends BaseController
 
         $id = $users->insert([
             ...$payload,
-            'role' => 'mitra',
+            'role' => 'karyawan',
             'is_verified' => true,
         ], true);
 

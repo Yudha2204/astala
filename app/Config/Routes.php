@@ -24,7 +24,7 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
     $routes->get('dashboard/api/chart/loans', 'ChartController::getLoanStats');
     $routes->get('dashboard/api/chart/pengambilan', 'ChartController::getPengambilanStats');
 
-    $routes->group('barang', ['filter' => 'role:admin,manager,karyawan'], static function (RouteCollection $routes) {
+    $routes->group('barang', ['filter' => 'role:admin,pj_gudang,karyawan'], static function (RouteCollection $routes) {
         $routes->get('/', 'BarangController::index');
         $routes->get('detail/(:num)', 'BarangController::detail/$1');
         $routes->get('api/barcode/(:segment)', 'BarangController::getByBarcode/$1');
@@ -37,7 +37,7 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
         $routes->post('toggle-qr/(:num)', 'BarangController::toggleQR/$1', ['filter' => 'canEdit']);
     });
 
-    $routes->group('peminjaman', ['filter' => 'role:admin,manager,karyawan'], static function (RouteCollection $routes) {
+    $routes->group('peminjaman', ['filter' => 'role:admin,pj_gudang,karyawan'], static function (RouteCollection $routes) {
         $routes->get('items', 'PeminjamanController::items');
         $routes->get('form', 'PeminjamanController::form');
         $routes->post('borrow', 'PeminjamanController::borrow');
@@ -49,12 +49,12 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
     });
 
     $routes->group('pengambilan', static function (RouteCollection $routes) {
-        $routes->get('/', 'PengambilanController::index', ['filter' => 'role:mitra']);
-        $routes->get('request', 'PengambilanController::showRequest', ['filter' => 'role:mitra']);
-        $routes->post('request', 'PengambilanController::submitRequest', ['filter' => 'role:mitra']);
+        $routes->get('/', 'PengambilanController::index', ['filter' => 'role:karyawan']);
+        $routes->get('request', 'PengambilanController::showRequest', ['filter' => 'role:karyawan']);
+        $routes->post('request', 'PengambilanController::submitRequest', ['filter' => 'role:karyawan']);
         $routes->get('detail/(:num)', 'PengambilanController::detail/$1');
-        $routes->get('pickup/(:num)', 'PengambilanController::showPickup/$1', ['filter' => 'role:mitra']);
-        $routes->post('pickup/(:num)', 'PengambilanController::submitPickup/$1', ['filter' => 'role:mitra']);
+        $routes->get('pickup/(:num)', 'PengambilanController::showPickup/$1', ['filter' => 'role:karyawan']);
+        $routes->post('pickup/(:num)', 'PengambilanController::submitPickup/$1', ['filter' => 'role:karyawan']);
         $routes->get('download/(:num)', 'PengambilanController::download/$1');
 
         $routes->get('admin', 'PengambilanController::adminIndex', ['filter' => 'canViewInventory']);
@@ -87,13 +87,13 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
             $routes->post('delete/(:num)', 'UserController::delete/$1');
         });
 
-        $routes->group('gudang', ['filter' => 'canEdit'], static function (RouteCollection $routes) {
+        $routes->group('gudang', static function (RouteCollection $routes) {
             $routes->get('/', 'GudangController::index');
-            $routes->get('add', 'GudangController::showAdd');
-            $routes->post('add', 'GudangController::add');
-            $routes->get('edit/(:num)', 'GudangController::showEdit/$1');
-            $routes->post('edit/(:num)', 'GudangController::update/$1');
-            $routes->post('delete/(:num)', 'GudangController::delete/$1');
+            $routes->get('add', 'GudangController::showAdd', ['filter' => 'canEdit']);
+            $routes->post('add', 'GudangController::add', ['filter' => 'canEdit']);
+            $routes->get('edit/(:num)', 'GudangController::showEdit/$1', ['filter' => 'canEdit']);
+            $routes->post('edit/(:num)', 'GudangController::update/$1', ['filter' => 'canEdit']);
+            $routes->post('delete/(:num)', 'GudangController::delete/$1', ['filter' => 'canEdit']);
         });
 
         $routes->group('aset-material', ['filter' => 'canViewInventory'], static function (RouteCollection $routes) {

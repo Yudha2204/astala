@@ -20,7 +20,7 @@ $statusClass = static fn ($status): string => [
     'done' => 'bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-400',
     'rejected' => 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400',
 ][$status] ?? 'bg-gray-100 text-gray-600';
-$canEdit = ($user['role'] ?? '') === 'admin' || (in_array($user['role'] ?? '', ['manager', 'karyawan'], true) && ($user['sub_user'] ?? '') === 'editor');
+$canEdit = in_array($user['role'] ?? '', ['admin', 'pj_gudang'], true);
 ?>
 
 <div class="space-y-6">
@@ -128,7 +128,7 @@ $canEdit = ($user['role'] ?? '') === 'admin' || (in_array($user['role'] ?? '', [
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Informasi</h2>
                 <div class="space-y-3 text-sm">
                     <div><p class="text-gray-500">Gudang</p><p class="text-gray-900 dark:text-white font-medium"><?= esc($pengambilan['gudang']['nama']) ?></p></div>
-                    <div><p class="text-gray-500">Nama Mitra</p><p class="text-gray-900 dark:text-white font-medium"><?= esc($pengambilan['nama_mitra']) ?></p></div>
+                    <div><p class="text-gray-500">Nama Karyawan</p><p class="text-gray-900 dark:text-white font-medium"><?= esc($pengambilan['nama_mitra']) ?></p></div>
                     <div><p class="text-gray-500">Nama Petugas</p><p class="text-gray-900 dark:text-white font-medium"><?= esc($pengambilan['nama_petugas']) ?></p></div>
                     <?php if ($pengambilan['deskripsi_keperluan']): ?><div><p class="text-gray-500">Keperluan</p><p class="text-gray-900 dark:text-white break-words"><?= esc($pengambilan['deskripsi_keperluan']) ?></p></div><?php endif ?>
                 </div>

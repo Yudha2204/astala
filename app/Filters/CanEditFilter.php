@@ -12,10 +12,7 @@ class CanEditFilter implements FilterInterface
     {
         $user = session('user');
         $role = $user['role'] ?? null;
-        $subUser = $user['sub_user'] ?? null;
-
-        $canEdit = $role === 'admin'
-            || (in_array($role, ['manager', 'karyawan'], true) && $subUser === 'editor');
+        $canEdit = in_array($role, ['admin', 'pj_gudang'], true);
 
         if ($canEdit) {
             return null;

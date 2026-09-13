@@ -340,7 +340,7 @@ class BarangController extends BaseController
     private function loanTimeline(int $barangId): array
     {
         $user = session('user');
-        if (! in_array($user['role'] ?? '', ['admin', 'manager'], true) && (($user['role'] ?? '') !== 'karyawan' || ($user['sub_user'] ?? '') !== 'editor')) {
+        if (! in_array($user['role'] ?? '', ['admin', 'pj_gudang'], true)) {
             return [];
         }
 

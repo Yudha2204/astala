@@ -22,7 +22,7 @@ $fmtQty = static function (array $item): string {
             <div class="space-y-6">
                 <div class="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                        <p class="text-gray-500 mb-1">Mitra</p>
+                        <p class="text-gray-500 mb-1">Karyawan</p>
                         <p class="font-medium text-gray-900 dark:text-white"><?= esc($pengambilan['nama_mitra']) ?></p>
                     </div>
                     <div>

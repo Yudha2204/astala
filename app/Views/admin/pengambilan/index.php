@@ -3,7 +3,7 @@
 <?php
 $query = $query ?? [];
 $pagination = $pagination ?? ['page' => 1, 'totalPages' => 1, 'hasPrev' => false, 'hasNext' => false, 'total' => 0];
-$canEdit = ($user['role'] ?? '') === 'admin' || (in_array($user['role'] ?? '', ['manager', 'karyawan'], true) && ($user['sub_user'] ?? '') === 'editor');
+$canEdit = in_array($user['role'] ?? '', ['admin', 'pj_gudang'], true);
 $fmt = static fn ($date): string => $date ? date('d M Y H:i', strtotime($date)) : '-';
 $statusText = static fn ($status): string => [
     'request' => 'Request',
@@ -73,7 +73,7 @@ $exportUrl = static function () use ($query): string {
 
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
         <form action="<?= site_url('pengambilan/admin') ?>" method="GET" class="flex flex-col md:flex-row items-center gap-3">
-            <input type="text" name="search" value="<?= esc($query['search'] ?? '') ?>" placeholder="Cari ID, mitra, gudang, atau petugas..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-xs">
+            <input type="text" name="search" value="<?= esc($query['search'] ?? '') ?>" placeholder="Cari ID, karyawan, gudang, atau petugas..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-xs">
             <button type="submit" class="w-full md:w-auto px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-all text-xs shadow-sm shadow-blue-500/20 active:scale-95">Cari</button>
             <select name="status" onchange="this.form.submit()" class="w-full md:w-auto px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer min-w-[150px] outline-none text-xs">
                 <option value="">Semua Status</option>
@@ -90,7 +90,7 @@ $exportUrl = static function () use ($query): string {
                 <thead class="bg-gray-50 dark:bg-gray-900/80 sticky top-0 z-20">
                     <tr>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Mitra</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Karyawan</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Gudang</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Items</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>

@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 <?php
-$canEdit = ($user['role'] ?? '') === 'admin' || (in_array($user['role'] ?? '', ['manager', 'karyawan'], true) && ($user['sub_user'] ?? '') === 'editor');
+$canEdit = in_array($user['role'] ?? '', ['admin', 'pj_gudang'], true);
 $badgeClass = match ($aset['tipe']) {
     'kabel' => 'bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400',
     'odp' => 'bg-orange-100 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400',

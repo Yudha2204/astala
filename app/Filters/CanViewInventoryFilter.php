@@ -13,7 +13,7 @@ class CanViewInventoryFilter implements FilterInterface
         $user = session('user');
         $role = $user['role'] ?? null;
 
-        if (in_array($role, ['admin', 'manager', 'karyawan'], true)) {
+        if (in_array($role, ['admin', 'pj_gudang'], true)) {
             return null;
         }
 

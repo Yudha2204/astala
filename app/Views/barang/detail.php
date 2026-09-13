@@ -2,8 +2,8 @@
 
 <?= $this->section('content') ?>
 <?php
-$canEdit = ($user['role'] ?? '') === 'admin' || (($user['role'] ?? '') === 'karyawan' && ($user['sub_user'] ?? '') === 'editor') || (($user['role'] ?? '') === 'manager' && ($user['sub_user'] ?? '') === 'editor');
-$canSeeTimeline = in_array($user['role'] ?? '', ['admin', 'manager'], true) || (($user['role'] ?? '') === 'karyawan' && ($user['sub_user'] ?? '') === 'editor');
+$canEdit = in_array($user['role'] ?? '', ['admin', 'pj_gudang'], true);
+$canSeeTimeline = in_array($user['role'] ?? '', ['admin', 'pj_gudang'], true);
 function barang_dt(?string $date): string
 {
     return $date ? date('d F Y H:i', strtotime($date)) : '-';

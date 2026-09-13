@@ -18,7 +18,7 @@ $statusBadge = static function (array $loan): string {
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Riwayat Peminjaman</h1>
             <p class="text-gray-500 dark:text-gray-400">Total <?= esc($pagination['total']) ?> peminjaman</p>
         </div>
-        <?php if (($user['role'] ?? '') === 'admin' || (($user['role'] ?? '') === 'karyawan' && ($user['sub_user'] ?? '') === 'editor')): ?>
+        <?php if (in_array($user['role'] ?? '', ['admin', 'pj_gudang'], true)): ?>
             <a href="<?= site_url('admin/report/pdf/my-loans') ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 font-medium rounded-lg hover:bg-gray-50 border border-gray-200 shadow-sm">Export PDF</a>
         <?php endif ?>
     </div>

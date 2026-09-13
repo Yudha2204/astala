@@ -14,7 +14,7 @@ class CreateAstalaSchema extends Migration
             'email' => ['type' => 'VARCHAR', 'constraint' => 100],
             'password' => ['type' => 'VARCHAR', 'constraint' => 255],
             'no_hp' => ['type' => 'VARCHAR', 'constraint' => 20, 'null' => true],
-            'role' => ['type' => 'ENUM', 'constraint' => ['admin', 'mitra', 'karyawan', 'manager'], 'default' => 'karyawan'],
+            'role' => ['type' => 'ENUM', 'constraint' => ['admin', 'pj_gudang', 'karyawan'], 'default' => 'karyawan'],
             'sub_user' => ['type' => 'ENUM', 'constraint' => ['editor', 'viewer'], 'default' => 'viewer'],
             'is_verified' => ['type' => 'TINYINT', 'constraint' => 1, 'default' => 0],
             'is_active' => ['type' => 'TINYINT', 'constraint' => 1, 'default' => 0],

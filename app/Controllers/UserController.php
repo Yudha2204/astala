@@ -99,15 +99,14 @@ class UserController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Email sudah terdaftar untuk pengguna lain');
         }
 
-        if (! in_array($role, ['admin', 'manager', 'karyawan', 'mitra'], true)) {
+        $role = str_replace(' ', '_', strtolower($role));
+        if (! in_array($role, ['admin', 'pj_gudang', 'karyawan'], true)) {
             $role = 'karyawan';
         }
 
-        if ($role === 'admin') {
+        if (in_array($role, ['admin', 'pj_gudang'], true)) {
             $subUser = 'editor';
-        } elseif ($role === 'mitra') {
-            $subUser = 'viewer';
-        } elseif (! in_array($subUser, ['editor', 'viewer'], true)) {
+        } else {
             $subUser = 'viewer';
         }
 
@@ -194,15 +193,14 @@ class UserController extends BaseController
             $isActive = 1;
         }
 
-        if (! in_array($role, ['admin', 'manager', 'karyawan', 'mitra'], true)) {
+        $role = str_replace(' ', '_', strtolower($role));
+        if (! in_array($role, ['admin', 'pj_gudang', 'karyawan'], true)) {
             $role = $targetUser['role'];
         }
 
-        if ($role === 'admin') {
+        if (in_array($role, ['admin', 'pj_gudang'], true)) {
             $subUser = 'editor';
-        } elseif ($role === 'mitra') {
-            $subUser = 'viewer';
-        } elseif (! in_array($subUser, ['editor', 'viewer'], true)) {
+        } else {
             $subUser = 'viewer';
         }
 

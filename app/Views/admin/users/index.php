@@ -15,11 +15,10 @@ $pageUrl = static function (int $page) use ($query): string {
 };
 
 $roleBadgeClass = static fn (string $role): string => match ($role) {
-    'admin'    => 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/30',
-    'manager'  => 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30',
-    'karyawan' => 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30',
-    'mitra'    => 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30',
-    default    => 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700/50 dark:text-gray-300 dark:border-gray-600',
+    'admin'     => 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/30',
+    'pj_gudang' => 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30',
+    'karyawan'  => 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30',
+    default     => 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700/50 dark:text-gray-300 dark:border-gray-600',
 };
 ?>
 
@@ -98,9 +97,8 @@ $roleBadgeClass = static fn (string $role): string => match ($role) {
             <select name="role" class="w-full md:w-auto px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer min-w-[130px] outline-none text-xs">
                 <option value="">Semua Role</option>
                 <option value="admin" <?= ($query['role'] ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
-                <option value="manager" <?= ($query['role'] ?? '') === 'manager' ? 'selected' : '' ?>>Manager</option>
+                <option value="pj_gudang" <?= ($query['role'] ?? '') === 'pj_gudang' ? 'selected' : '' ?>>PJ Gudang</option>
                 <option value="karyawan" <?= ($query['role'] ?? '') === 'karyawan' ? 'selected' : '' ?>>Karyawan</option>
-                <option value="mitra" <?= ($query['role'] ?? '') === 'mitra' ? 'selected' : '' ?>>Mitra</option>
             </select>
 
             <select name="status" class="w-full md:w-auto px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer min-w-[130px] outline-none text-xs">
@@ -168,9 +166,9 @@ $roleBadgeClass = static fn (string $role): string => match ($role) {
                                 <td class="px-6 py-4">
                                     <div class="flex flex-wrap items-center gap-1.5">
                                         <span class="px-2.5 py-1 text-[11px] font-medium border rounded-md capitalize <?= $roleBadgeClass($u['role']) ?>">
-                                            <?= esc($u['role']) ?>
+                                            <?= esc(str_replace('_', ' ', $u['role'])) ?>
                                         </span>
-                                        <?php if (in_array($u['role'], ['karyawan', 'manager'], true) && ! empty($u['sub_user'])): ?>
+                                        <?php if ($u['role'] === 'pj_gudang' && ! empty($u['sub_user'])): ?>
                                             <span class="px-2 py-0.5 text-[10px] font-medium rounded bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 capitalize">
                                                 <?= esc($u['sub_user']) ?>
                                             </span>

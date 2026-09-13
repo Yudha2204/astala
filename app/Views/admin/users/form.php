@@ -66,9 +66,8 @@ $isVerified = (bool) $oldOr('is_verified', true);
                     <?php else: ?>
                         <select name="role" id="role-select" required onchange="handleRoleChange(this.value)" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm cursor-pointer">
                             <option value="karyawan" <?= $selectedRole === 'karyawan' ? 'selected' : '' ?>>Karyawan</option>
-                            <option value="manager" <?= $selectedRole === 'manager' ? 'selected' : '' ?>>Manager</option>
-                            <option value="mitra" <?= $selectedRole === 'mitra' ? 'selected' : '' ?>>Mitra</option>
-                            <option value="admin" <?= $selectedRole === 'admin' ? 'selected' : '' ?>>Admin</option>
+                            <option value="pj_gudang" <?= $selectedRole === 'pj_gudang' ? 'selected' : '' ?>>PJ Gudang</option>
+                            <option value="admin" <?= $selectedRole === 'admin' ? 'selected' : '' ?>>Admin (Developer)</option>
                         </select>
                     <?php endif ?>
                 </div>
@@ -168,14 +167,15 @@ function handleRoleChange(role) {
     if (role === 'admin') {
         subUserSelect.value = 'editor';
         subUserSelect.disabled = true;
-        subUserHint.textContent = 'Admin otomatis memiliki hak akses Editor.';
-    } else if (role === 'mitra') {
+        subUserHint.textContent = 'Admin (Developer) memiliki hak akses penuh ke semua fitur.';
+    } else if (role === 'pj_gudang') {
+        subUserSelect.value = 'editor';
+        subUserSelect.disabled = true;
+        subUserHint.textContent = 'PJ Gudang memiliki akses menambah/mengubah barang dan lokasi gudang.';
+    } else {
         subUserSelect.value = 'viewer';
         subUserSelect.disabled = true;
-        subUserHint.textContent = 'Mitra otomatis memiliki hak akses Viewer (Request Pengambilan).';
-    } else {
-        subUserSelect.disabled = false;
-        subUserHint.textContent = 'Editor memiliki akses menambah & memperbarui barang/gudang.';
+        subUserHint.textContent = 'Karyawan hanya dapat melihat barang & gudang, serta meminjam/mengembalikan barang.';
     }
 }
 

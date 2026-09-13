@@ -94,7 +94,7 @@ class PengambilanController extends BaseController
             $id = (int) (new PengambilanAsetModel())->insert([
                 'mitra_id' => $user['id'] ?? null,
                 'gudang_id' => (int) $this->request->getPost('gudang_id'),
-                'nama_mitra' => $user['nama'] ?? 'Mitra',
+                'nama_mitra' => $user['nama'] ?? 'Karyawan',
                 'nama_petugas' => trim((string) $this->request->getPost('nama_petugas')),
                 'deskripsi_keperluan' => trim((string) $this->request->getPost('deskripsi_keperluan')) ?: null,
                 'status' => 'request',
@@ -117,8 +117,8 @@ class PengambilanController extends BaseController
                 ]);
             }
 
-            $this->notifyAdmins('Request Pengambilan Baru', ($user['nama'] ?? 'Mitra') . ' mengajukan request pengambilan aset', 'info', '/pengambilan/admin');
-            $this->logActivity('REQUEST_PENGAMBILAN', 'Mitra ' . ($user['nama'] ?? '-') . ' mengajukan request pengambilan', 'pengambilan_aset', $id);
+            $this->notifyAdmins('Request Pengambilan Baru', ($user['nama'] ?? 'Karyawan') . ' mengajukan request pengambilan aset', 'info', '/pengambilan/admin');
+            $this->logActivity('REQUEST_PENGAMBILAN', 'Karyawan ' . ($user['nama'] ?? '-') . ' mengajukan request pengambilan', 'pengambilan_aset', $id);
 
             $db->transComplete();
 
@@ -140,7 +140,7 @@ class PengambilanController extends BaseController
             return redirect()->to('/pengambilan')->with('error', 'Data tidak ditemukan');
         }
 
-        if ((int) $pengambilan['mitra_id'] !== (int) ($user['id'] ?? 0) && ($user['role'] ?? '') !== 'admin') {
+        if ((int) $pengambilan['mitra_id'] !== (int) ($user['id'] ?? 0) && ! in_array($user['role'] ?? '', ['admin', 'pj_gudang'], true)) {
             return redirect()->to('/pengambilan')->with('error', 'Anda tidak memiliki akses');
         }
 
@@ -148,7 +148,7 @@ class PengambilanController extends BaseController
             'title' => 'Detail Pengambilan - ASTALA',
             'user' => $user,
             'pengambilan' => $pengambilan,
-            'backUrl' => ($user['role'] ?? '') === 'admin' ? '/pengambilan/admin' : '/pengambilan',
+            'backUrl' => in_array($user['role'] ?? '', ['admin', 'pj_gudang'], true) ? '/pengambilan/admin' : '/pengambilan',
         ]);
     }
 
@@ -183,7 +183,7 @@ class PengambilanController extends BaseController
         ]);
 
         $this->notifyAdmins('Pengambilan Menunggu Konfirmasi', 'Pengambilan oleh ' . $pengambilan['nama_mitra'] . ' menunggu konfirmasi admin', 'warning', '/pengambilan/admin/detail/' . $id);
-        $this->logActivity('PICKUP_ASET', 'Mitra menyelesaikan pickup aset', 'pengambilan_aset', $id);
+        $this->logActivity('PICKUP_ASET', 'Karyawan menyelesaikan pickup aset', 'pengambilan_aset', $id);
 
         return redirect()->to('/pengambilan/detail/' . $id)->with('success', 'Pickup berhasil. Menunggu konfirmasi admin.');
     }

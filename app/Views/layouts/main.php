@@ -2,7 +2,7 @@
 $user = $user ?? session('user');
 $role = $user['role'] ?? 'guest';
 $currentPath = '/' . ltrim(current_url(true)->getPath(), '/');
-$canEdit = $role === 'admin' || (in_array($role, ['manager', 'karyawan'], true) && ($user['sub_user'] ?? '') === 'editor');
+$canEdit = in_array($role, ['admin', 'pj_gudang'], true);
 $simpellUrl = rtrim((string) env('SIMPELL_URL', ''), '/');
 $profilePhotoUrl = static function (?string $path): ?string {
     if (! $path) {
@@ -32,14 +32,16 @@ $navSections = [
     [
         'label' => 'Keluar Masuk Aset',
         'items' => [
-            ['label' => 'Gudang', 'url' => '/admin/gudang', 'show' => $canEdit, 'icon' => 'building'],
+            ['label' => 'Gudang', 'url' => '/admin/gudang', 'show' => true, 'icon' => 'building'],
+            ['label' => 'Aset Material', 'url' => '/admin/aset-material', 'show' => in_array($role, ['admin', 'pj_gudang'], true), 'icon' => 'box'],
+            ['label' => 'Pengambilan Aset', 'url' => in_array($role, ['admin', 'pj_gudang'], true) ? '/pengambilan/admin' : '/pengambilan', 'show' => true, 'icon' => 'check'],
         ],
     ],
     [
-        'label' => $role === 'manager' ? 'Manager' : 'Admin',
+        'label' => $role === 'pj_gudang' ? 'PJ Gudang' : 'Admin',
         'items' => [
             ['label' => 'Manajemen User', 'url' => '/admin/users', 'show' => $role === 'admin', 'icon' => 'users'],
-            ['label' => 'History Peminjaman', 'url' => '/admin/loans', 'show' => in_array($role, ['admin', 'manager'], true), 'icon' => 'chart'],
+            ['label' => 'History Peminjaman', 'url' => '/admin/loans', 'show' => in_array($role, ['admin', 'pj_gudang'], true), 'icon' => 'chart'],
             ['label' => 'Log Aktivitas', 'url' => '/admin/logs', 'show' => $role === 'admin', 'icon' => 'document'],
         ],
     ],

@@ -278,7 +278,7 @@ class PeminjamanController extends BaseController
         }
 
         $role = $user['role'] ?? '';
-        if (! in_array($role, ['admin', 'manager'], true) && (int) $peminjaman['user_id'] !== (int) ($user['id'] ?? 0)) {
+        if (! in_array($role, ['admin', 'pj_gudang'], true) && (int) $peminjaman['user_id'] !== (int) ($user['id'] ?? 0)) {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses');
         }
 

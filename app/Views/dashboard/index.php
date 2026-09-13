@@ -65,13 +65,13 @@ $icons = [
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                <?= esc($dashboardType === 'manager' ? 'Dashboard Manager' : ($dashboardType === 'mitra' ? 'Dashboard Mitra' : 'Dashboard')) ?>
+                <?= esc($dashboardType === 'admin' ? 'Dashboard Admin' : ($dashboardType === 'pj_gudang' ? 'Dashboard PJ Gudang' : 'Dashboard Karyawan')) ?>
             </h1>
             <p class="text-gray-500 dark:text-gray-400">Selamat datang kembali, <?= esc($user['nama'] ?? 'User') ?>!</p>
         </div>
     </div>
 
-    <?php if (in_array($dashboardType, ['admin', 'manager'], true)): ?>
+    <?php if (in_array($dashboardType, ['admin', 'pj_gudang'], true)): ?>
         <div class="pt-2">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 bg-blue-100 dark:bg-blue-500/10 rounded-lg flex items-center justify-center">
@@ -139,36 +139,78 @@ $icons = [
                 <?php endif ?>
             </div>
         </div>
-    <?php elseif ($dashboardType === 'mitra'): ?>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <?= astala_stat_card('Total Pengambilan', $stats['total'] ?? 0, 'blue', $icons['clipboard']) ?>
-            <?= astala_stat_card('Menunggu Proses', $stats['pending'] ?? 0, 'yellow', $icons['clock']) ?>
-            <?= astala_stat_card('Selesai', $stats['completed'] ?? 0, 'green', $icons['check']) ?>
+    <?php else: ?>
+        <!-- Karyawan Dashboard: Peminjaman & Pengambilan -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <?= astala_stat_card('Peminjaman Aktif', $stats['aktivePeminjaman'] ?? 0, 'blue', $icons['clipboard'], site_url('peminjaman/history')) ?>
+            <?= astala_stat_card('Sudah Dikembalikan', $stats['selesaiPeminjaman'] ?? 0, 'green', $icons['check'], site_url('peminjaman/history')) ?>
+            <?= astala_stat_card('Pengambilan Selesai', $stats['completedPengambilan'] ?? 0, 'teal', $icons['check'], site_url('pengambilan')) ?>
+            <?= astala_stat_card('Pengambilan Diproses', $stats['pendingPengambilan'] ?? 0, 'yellow', $icons['clock'], site_url('pengambilan')) ?>
         </div>
 
-        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['archive'] ?></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-semibold">Pengambilan Aset</h2>
-                        <p class="text-white/80 text-sm">Request pengambilan kabel, ODP, atau Closure</p>
-                    </div>
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a href="<?= site_url('peminjaman/items') ?>" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-blue-500 dark:hover:border-blue-500 transition-colors group shadow-sm">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/10 rounded-xl flex items-center justify-center mb-3 group-hover:bg-blue-200 dark:group-hover:bg-blue-500/20 transition-colors">
+                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['plus'] ?></svg>
                 </div>
-                <div class="flex gap-3">
-                    <a href="<?= site_url('pengambilan/request') ?>" class="px-5 py-2.5 bg-white text-blue-600 rounded-lg font-medium hover:bg-gray-100 transition-colors">+ Request Baru</a>
-                    <a href="<?= site_url('pengambilan') ?>" class="px-5 py-2.5 bg-white/20 text-white rounded-lg font-medium hover:bg-white/30 transition-colors">Lihat Semua</a>
+                <p class="font-medium text-gray-900 dark:text-white">Pinjam Barang</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Mulai peminjaman baru</p>
+            </a>
+
+            <a href="<?= site_url('barang') ?>" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-blue-500 dark:hover:border-blue-500 transition-colors group shadow-sm">
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-500/10 rounded-xl flex items-center justify-center mb-3">
+                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['box'] ?></svg>
                 </div>
-            </div>
+                <p class="font-medium text-gray-900 dark:text-white">Daftar Barang</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Lihat katalog inventaris</p>
+            </a>
+
+            <a href="<?= site_url('admin/gudang') ?>" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-blue-500 dark:hover:border-blue-500 transition-colors group shadow-sm">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-500/10 rounded-xl flex items-center justify-center mb-3">
+                    <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                </div>
+                <p class="font-medium text-gray-900 dark:text-white">Lokasi Gudang</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Lihat data gudang</p>
+            </a>
+
+            <a href="<?= site_url('pengambilan/request') ?>" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-blue-500 dark:hover:border-blue-500 transition-colors group shadow-sm">
+                <div class="w-12 h-12 bg-amber-100 dark:bg-amber-500/10 rounded-xl flex items-center justify-center mb-3">
+                    <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['archive'] ?></svg>
+                </div>
+                <p class="font-medium text-gray-900 dark:text-white">Request Aset</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Permintaan material baru</p>
+            </a>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Pengambilan Terakhir</h2>
+        <!-- Barang yang Sedang Dipinjam -->
+        <?php if (! empty($currentLoans)): ?>
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+                <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Barang yang Sedang Dipinjam</h2>
+                    <a href="<?= site_url('peminjaman/history') ?>" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">Lihat Semua</a>
+                </div>
+                <div class="p-5 divide-y divide-gray-200 dark:divide-gray-700">
+                    <?php foreach ($currentLoans as $loan): ?>
+                        <div class="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white"><?= esc($loan['nama_barang'] ?? '-') ?></p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">SN: <?= esc($loan['nomor_seri'] ?? '-') ?></p>
+                            </div>
+                            <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">Aktif</span>
+                        </div>
+                    <?php endforeach ?>
+                </div>
             </div>
-            <?php if ($recentPickups): ?>
+        <?php endif ?>
+
+        <!-- Pengambilan Terakhir -->
+        <?php if (! empty($recentPickups)): ?>
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Pengambilan Material Terakhir</h2>
+                    <a href="<?= site_url('pengambilan') ?>" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">Lihat Semua</a>
+                </div>
                 <div class="divide-y divide-gray-200 dark:divide-gray-700">
                     <?php foreach ($recentPickups as $pickup): ?>
                         <a href="<?= site_url('pengambilan/detail/' . $pickup['id']) ?>" class="flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
@@ -180,43 +222,8 @@ $icons = [
                         </a>
                     <?php endforeach ?>
                 </div>
-            <?php else: ?>
-                <div class="p-8 text-center">
-                    <p class="text-gray-500 dark:text-gray-400 mb-4">Belum ada pengambilan. Mulai dengan membuat request baru.</p>
-                    <a href="<?= site_url('pengambilan/request') ?>" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Request Pengambilan</a>
-                </div>
-            <?php endif ?>
-        </div>
-    <?php else: ?>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <?= astala_stat_card('Total Peminjaman', $stats['totalPeminjaman'] ?? 0, 'blue', $icons['clipboard']) ?>
-            <?= astala_stat_card('Sudah Dikembalikan', $stats['selesaiPeminjaman'] ?? 0, 'green', $icons['check']) ?>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <a href="<?= site_url('peminjaman/items') ?>" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-blue-500 dark:hover:border-blue-500 transition-colors group shadow-sm">
-                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/10 rounded-xl flex items-center justify-center mb-3 group-hover:bg-blue-200 dark:group-hover:bg-blue-500/20 transition-colors">
-                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['plus'] ?></svg>
-                </div>
-                <p class="font-medium text-gray-900 dark:text-white">Pinjam Barang</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Mulai peminjaman baru</p>
-            </a>
-
-            <a href="<?= site_url('peminjaman/history') ?>" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-blue-500 dark:hover:border-blue-500 transition-colors group shadow-sm">
-                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/10 rounded-xl flex items-center justify-center mb-3">
-                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['clock'] ?></svg>
-                </div>
-                <p class="font-medium text-gray-900 dark:text-white">Riwayat</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Lihat semua riwayat</p>
-            </a>
-            <a href="<?= site_url('barang') ?>" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-blue-500 dark:hover:border-blue-500 transition-colors group shadow-sm">
-                <div class="w-12 h-12 bg-green-100 dark:bg-green-500/10 rounded-xl flex items-center justify-center mb-3">
-                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['box'] ?></svg>
-                </div>
-                <p class="font-medium text-gray-900 dark:text-white">Inventaris</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Lihat daftar barang</p>
-            </a>
-        </div>
+            </div>
+        <?php endif ?>
 
 
     <?php endif ?>
