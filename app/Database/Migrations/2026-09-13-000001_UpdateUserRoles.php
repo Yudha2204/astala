@@ -17,9 +17,11 @@ class UpdateUserRoles extends Migration
         // - 'karyawan' becomes 'pj_gudang'
         // - 'mitra' becomes 'karyawan'
         // - 'manager' (if any) becomes 'pj_gudang'
+        // - empty/corrupted roles become 'pj_gudang'
         $db->query("UPDATE `users` SET `role` = 'pj_gudang', `sub_user` = 'editor' WHERE `role` = 'karyawan'");
         $db->query("UPDATE `users` SET `role` = 'pj_gudang', `sub_user` = 'editor' WHERE `role` = 'manager'");
         $db->query("UPDATE `users` SET `role` = 'karyawan', `sub_user` = 'viewer' WHERE `role` = 'mitra'");
+        $db->query("UPDATE `users` SET `role` = 'pj_gudang', `sub_user` = 'editor' WHERE `role` = '' OR `role` IS NULL");
 
         // 3. Constrain ENUM strictly to the 3 new roles: admin, pj_gudang, karyawan
         $db->query("ALTER TABLE `users` MODIFY COLUMN `role` ENUM('admin', 'pj_gudang', 'karyawan') NOT NULL DEFAULT 'karyawan'");

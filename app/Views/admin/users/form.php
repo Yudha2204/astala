@@ -8,8 +8,11 @@ $isSelf = $isEdit && ((int) $targetId === $currentUserId);
 $action = $isEdit ? site_url('admin/users/edit/' . $targetId) : site_url('admin/users/add');
 
 $oldOr = static fn (string $key, $default = '') => old($key) !== null ? old($key) : ($editUser[$key] ?? $default);
-$selectedRole = (string) $oldOr('role', 'karyawan');
-$selectedSubUser = (string) $oldOr('sub_user', 'viewer');
+$selectedRole = (string) $oldOr('role', 'pj_gudang');
+if (! in_array($selectedRole, ['admin', 'pj_gudang', 'karyawan'], true)) {
+    $selectedRole = 'pj_gudang';
+}
+$selectedSubUser = (string) $oldOr('sub_user', 'editor');
 $isActive = (bool) $oldOr('is_active', true);
 $isVerified = (bool) $oldOr('is_verified', true);
 ?>

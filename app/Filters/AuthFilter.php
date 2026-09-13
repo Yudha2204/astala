@@ -11,6 +11,16 @@ class AuthFilter implements FilterInterface
     public function before(RequestInterface $request, $arguments = null)
     {
         if (session()->has('user')) {
+            $user = session('user');
+            if (empty($user['role']) || ! in_array($user['role'], ['admin', 'pj_gudang', 'karyawan'], true)) {
+                $freshUser = (new \App\Models\UserModel())->find($user['id'] ?? 0);
+                if ($freshUser && ! empty($freshUser['role'])) {
+                    $user['role'] = $freshUser['role'];
+                    $user['sub_user'] = $freshUser['sub_user'];
+                    session()->set('user', $user);
+                }
+            }
+
             return null;
         }
 

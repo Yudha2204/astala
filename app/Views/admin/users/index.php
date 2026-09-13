@@ -165,8 +165,16 @@ $roleBadgeClass = static fn (string $role): string => match ($role) {
                                 <!-- Role & Sub User -->
                                 <td class="px-6 py-4">
                                     <div class="flex flex-wrap items-center gap-1.5">
+                                        <?php
+                                        $displayRole = match ($u['role']) {
+                                            'admin'     => 'Admin',
+                                            'pj_gudang' => 'PJ Gudang',
+                                            'karyawan'  => 'Karyawan',
+                                            default     => 'Belum Diatur',
+                                        };
+                                        ?>
                                         <span class="px-2.5 py-1 text-[11px] font-medium border rounded-md capitalize <?= $roleBadgeClass($u['role']) ?>">
-                                            <?= esc(str_replace('_', ' ', $u['role'])) ?>
+                                            <?= esc($displayRole) ?>
                                         </span>
                                         <?php if ($u['role'] === 'pj_gudang' && ! empty($u['sub_user'])): ?>
                                             <span class="px-2 py-0.5 text-[10px] font-medium rounded bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 capitalize">

@@ -11,6 +11,8 @@ class UserController extends BaseController
 
     public function index()
     {
+        $this->ensureRoleSchema();
+
         $query = [
             'search' => trim((string) $this->request->getGet('search')),
             'role'   => trim((string) $this->request->getGet('role')),
@@ -58,6 +60,8 @@ class UserController extends BaseController
 
     public function showAdd()
     {
+        $this->ensureRoleSchema();
+
         return view('admin/users/form', [
             'title'    => 'Tambah User - ASTALA',
             'user'     => session('user'),
@@ -68,6 +72,8 @@ class UserController extends BaseController
 
     public function add()
     {
+        $this->ensureRoleSchema();
+
         $nama            = trim((string) $this->request->getPost('nama'));
         $email           = strtolower(trim((string) $this->request->getPost('email')));
         $noHp            = trim((string) $this->request->getPost('no_hp'));
@@ -129,6 +135,8 @@ class UserController extends BaseController
 
     public function showEdit(int $id)
     {
+        $this->ensureRoleSchema();
+
         $targetUser = (new UserModel())->find($id);
 
         if (! $targetUser) {
@@ -145,6 +153,8 @@ class UserController extends BaseController
 
     public function update(int $id)
     {
+        $this->ensureRoleSchema();
+
         $userModel  = new UserModel();
         $targetUser = $userModel->find($id);
 
@@ -195,7 +205,7 @@ class UserController extends BaseController
 
         $role = str_replace(' ', '_', strtolower($role));
         if (! in_array($role, ['admin', 'pj_gudang', 'karyawan'], true)) {
-            $role = $targetUser['role'];
+            $role = 'karyawan';
         }
 
         if (in_array($role, ['admin', 'pj_gudang'], true)) {
@@ -328,5 +338,27 @@ class UserController extends BaseController
             'ip_address'  => $this->request->getIPAddress(),
             'user_agent'  => (string) $this->request->getUserAgent(),
         ]);
+    }
+
+    private function ensureRoleSchema(): void
+    {
+        try {
+            $db = db_connect();
+            $col = $db->query("SHOW COLUMNS FROM `users` LIKE 'role'")->getRowArray();
+            $type = (string) ($col['Type'] ?? '');
+
+            if ($col && ! str_contains($type, 'pj_gudang')) {
+                $db->query("ALTER TABLE `users` MODIFY COLUMN `role` ENUM('admin', 'mitra', 'karyawan', 'manager', 'pj_gudang') NOT NULL DEFAULT 'karyawan'");
+                $db->query("UPDATE `users` SET `role` = 'pj_gudang', `sub_user` = 'editor' WHERE `role` = 'karyawan'");
+                $db->query("UPDATE `users` SET `role` = 'pj_gudang', `sub_user` = 'editor' WHERE `role` = 'manager'");
+                $db->query("UPDATE `users` SET `role` = 'karyawan', `sub_user` = 'viewer' WHERE `role` = 'mitra'");
+                $db->query("ALTER TABLE `users` MODIFY COLUMN `role` ENUM('admin', 'pj_gudang', 'karyawan') NOT NULL DEFAULT 'karyawan'");
+            }
+
+            // Auto-repair any corrupt empty string role in database
+            $db->query("UPDATE `users` SET `role` = 'pj_gudang', `sub_user` = 'editor' WHERE `role` = '' OR `role` IS NULL");
+        } catch (\Throwable) {
+            // Silently ignore if MySQL user lacks ALTER TABLE privilege
+        }
     }
 }
