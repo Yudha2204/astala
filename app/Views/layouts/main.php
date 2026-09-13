@@ -24,30 +24,21 @@ $navSections = [
     [
         'label' => 'Peminjaman',
         'items' => [
-            ['label' => 'Daftar Barang', 'url' => '/barang', 'show' => $role !== 'mitra', 'icon' => 'box'],
-            ['label' => 'Pinjam Barang', 'url' => '/peminjaman/items', 'show' => $role !== 'mitra', 'icon' => 'plus'],
-            ['label' => 'Sedang Dipinjam', 'url' => '/peminjaman/current', 'show' => $role !== 'mitra', 'icon' => 'clipboard'],
-            ['label' => 'Riwayat Peminjaman', 'url' => '/peminjaman/history', 'show' => $role !== 'mitra', 'icon' => 'clock'],
-        ],
-    ],
-    [
-        'label' => null,
-        'items' => [
-            ['label' => 'Pengambilan Aset', 'url' => '/pengambilan', 'show' => $role === 'mitra', 'icon' => 'archive'],
+            ['label' => 'Daftar Barang', 'url' => '/barang', 'show' => true, 'icon' => 'box'],
+            ['label' => 'Pinjam Barang', 'url' => '/peminjaman/items', 'show' => true, 'icon' => 'plus'],
+            ['label' => 'Riwayat Peminjaman', 'url' => '/peminjaman/history', 'show' => true, 'icon' => 'clock'],
         ],
     ],
     [
         'label' => 'Keluar Masuk Aset',
         'items' => [
             ['label' => 'Gudang', 'url' => '/admin/gudang', 'show' => $canEdit, 'icon' => 'building'],
-            ['label' => 'Aset Material', 'url' => '/admin/aset-material', 'show' => in_array($role, ['admin', 'manager', 'karyawan'], true), 'icon' => 'box'],
-            ['label' => 'Pengambilan Aset', 'url' => '/pengambilan/admin', 'show' => in_array($role, ['admin', 'manager', 'karyawan'], true), 'icon' => 'check'],
         ],
     ],
     [
         'label' => $role === 'manager' ? 'Manager' : 'Admin',
         'items' => [
-            ['label' => 'Semua Peminjaman', 'url' => '/admin/loans', 'show' => in_array($role, ['admin', 'manager'], true), 'icon' => 'chart'],
+            ['label' => 'History Peminjaman', 'url' => '/admin/loans', 'show' => in_array($role, ['admin', 'manager'], true), 'icon' => 'chart'],
             ['label' => 'Log Aktivitas', 'url' => '/admin/logs', 'show' => $role === 'admin', 'icon' => 'document'],
         ],
     ],

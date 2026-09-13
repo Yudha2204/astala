@@ -84,7 +84,7 @@ $icons = [
             <?= astala_stat_card('Tersedia', $stats['barangTersedia'] ?? 0, 'green', $icons['check']) ?>
             <?= astala_stat_card('Kondisi Baik', $stats['barangBaik'] ?? 0, 'teal', $icons['shield']) ?>
             <?= astala_stat_card('Rusak', $stats['barangRusak'] ?? 0, 'red', $icons['warning']) ?>
-            <?= astala_stat_card('Sedang Dipinjam', $stats['barangDipinjam'] ?? 0, 'yellow', $icons['clock']) ?>
+
             <?= astala_stat_card('Peminjaman Aktif', $stats['activePeminjaman'] ?? 0, 'blue', $icons['clipboard']) ?>
             <?php if ($dashboardType === 'admin'): ?>
                 <?= astala_stat_card('Total User', $stats['totalUser'] ?? 0, 'cyan', $icons['users']) ?>
@@ -106,48 +106,7 @@ $icons = [
             </div>
         </div>
 
-        <div class="border-t-2 border-gray-200 dark:border-gray-700 pt-6 mt-2">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-500/10 rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['archive'] ?></svg>
-                </div>
-                <div>
-                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">Pengambilan Aset Material</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Statistik pengambilan aset oleh mitra</p>
-                </div>
-            </div>
-        </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <?= astala_stat_card('Total Pengambilan', $stats['totalPengambilan'] ?? 0, 'blue', $icons['archive']) ?>
-            <?= astala_stat_card('Menunggu Approval', $stats['pendingPengambilan'] ?? 0, 'amber', $icons['clock']) ?>
-            <?= astala_stat_card('Pengambilan Selesai', $stats['donePengambilan'] ?? 0, 'emerald', $icons['check']) ?>
-            <?= astala_stat_card('Ditolak', $stats['rejectedPengambilan'] ?? 0, 'red', $icons['x']) ?>
-        </div>
-
-        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
-            <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Statistik Pengambilan Aset</h2>
-                    <span id="pengambilanTotalBadge" class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 rounded-full text-sm font-medium">Total: 0</span>
-                </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <select id="pickupStatus" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-white text-sm">
-                        <option value="all">Semua Status</option>
-                        <option value="done">Selesai</option>
-                        <option value="rejected">Ditolak</option>
-                    </select>
-                    <select id="pickupPeriod" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-white text-sm">
-                        <option value="daily">Harian</option>
-                        <option value="monthly">Bulanan</option>
-                        <option value="yearly">Tahunan</option>
-                    </select>
-                </div>
-            </div>
-            <div class="p-5">
-                <div class="relative w-full h-[300px]"><canvas id="pickupChart"></canvas></div>
-            </div>
-        </div>
 
         <div class="bg-white dark:bg-gray-800 border border-red-200 dark:border-red-500/50 rounded-xl shadow-sm">
             <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
@@ -224,9 +183,8 @@ $icons = [
             <?php endif ?>
         </div>
     <?php else: ?>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <?= astala_stat_card('Total Peminjaman', $stats['totalPeminjaman'] ?? 0, 'blue', $icons['clipboard']) ?>
-            <?= astala_stat_card('Sedang Dipinjam', $stats['aktivePeminjaman'] ?? 0, 'yellow', $icons['clock']) ?>
             <?= astala_stat_card('Sudah Dikembalikan', $stats['selesaiPeminjaman'] ?? 0, 'green', $icons['check']) ?>
         </div>
 
@@ -238,13 +196,7 @@ $icons = [
                 <p class="font-medium text-gray-900 dark:text-white">Pinjam Barang</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">Mulai peminjaman baru</p>
             </a>
-            <a href="<?= site_url('peminjaman/current') ?>" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-blue-500 dark:hover:border-blue-500 transition-colors group shadow-sm">
-                <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-500/10 rounded-xl flex items-center justify-center mb-3">
-                    <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['clipboard'] ?></svg>
-                </div>
-                <p class="font-medium text-gray-900 dark:text-white">Sedang Dipinjam</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Lihat barang aktif</p>
-            </a>
+
             <a href="<?= site_url('peminjaman/history') ?>" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-blue-500 dark:hover:border-blue-500 transition-colors group shadow-sm">
                 <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/10 rounded-xl flex items-center justify-center mb-3">
                     <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['clock'] ?></svg>
@@ -261,37 +213,7 @@ $icons = [
             </a>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
-            <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Barang yang Sedang Dipinjam</h2>
-                <a href="<?= site_url('peminjaman/current') ?>" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat Semua</a>
-            </div>
-            <div class="p-5">
-                <?php if ($currentLoans): ?>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <?php foreach (array_slice($currentLoans, 0, 6) as $loan): ?>
-                            <?php $isOverdue = strtotime($loan['tanggal_kembali_rencana']) < time(); ?>
-                            <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 border <?= $isOverdue ? 'border-red-200 dark:border-red-500/50' : 'border-gray-200 dark:border-gray-700' ?>">
-                                <div class="flex items-start justify-between mb-3">
-                                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-500/10 rounded-lg flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['box'] ?></svg>
-                                    </div>
-                                    <span class="px-2 py-1 text-xs font-medium <?= $isOverdue ? 'bg-red-100 text-red-800 dark:bg-red-500/10 dark:text-red-400' : 'bg-green-100 text-green-800 dark:bg-green-500/10 dark:text-green-400' ?> rounded"><?= $isOverdue ? 'Terlambat' : 'Aktif' ?></span>
-                                </div>
-                                <h3 class="font-medium text-gray-900 dark:text-white mb-1 truncate"><?= esc($loan['nama_barang'] ?? '-') ?></h3>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">SN: <?= esc($loan['nomor_seri'] ?? '-') ?></p>
-                                <p class="text-xs <?= $isOverdue ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400' ?>">Deadline: <?= esc(astala_format_datetime($loan['tanggal_kembali_rencana'] ?? null)) ?></p>
-                            </div>
-                        <?php endforeach ?>
-                    </div>
-                <?php else: ?>
-                    <div class="text-center py-8">
-                        <p class="text-gray-500 dark:text-gray-400 mb-4">Tidak ada barang yang sedang dipinjam</p>
-                        <a href="<?= site_url('peminjaman/items') ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">Pinjam Barang</a>
-                    </div>
-                <?php endif ?>
-            </div>
-        </div>
+
     <?php endif ?>
 </div>
 
@@ -360,16 +282,7 @@ function refreshLoanChart() {
     if (loanPeriod) loadChart('loanChart', `/dashboard/api/chart/loans?period=${loanPeriod.value}`);
 }
 
-function refreshPickupChart() {
-    if (pickupPeriod && pickupStatus) {
-        loadChart('pickupChart', `/dashboard/api/chart/pengambilan?period=${pickupPeriod.value}&status=${pickupStatus.value}`, pickupStatus.value);
-    }
-}
-
 loanPeriod?.addEventListener('change', refreshLoanChart);
-pickupPeriod?.addEventListener('change', refreshPickupChart);
-pickupStatus?.addEventListener('change', refreshPickupChart);
 refreshLoanChart();
-refreshPickupChart();
 </script>
 <?= $this->endSection() ?>
