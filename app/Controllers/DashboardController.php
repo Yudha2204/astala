@@ -45,14 +45,14 @@ class DashboardController extends BaseController
             $data['stats'] = $this->inventoryStats() + [
                 'totalUser' => (new UserModel())->countAllResults(),
                 'activePeminjaman' => $this->countWhere(PeminjamanModel::class, ['status_peminjaman' => 'aktif']),
-            ] + $this->pengambilanStats();
+            ];
 
             return view('dashboard/index', $data);
         }
 
         if ($user['role'] === 'pj_gudang') {
             $data['dashboardType'] = 'pj_gudang';
-            $data['stats'] = $this->inventoryStats() + $this->pengambilanStats();
+            $data['stats'] = $this->inventoryStats();
 
             return view('dashboard/index', $data);
         }
@@ -62,15 +62,8 @@ class DashboardController extends BaseController
             'totalPeminjaman' => $this->countWhere(PeminjamanModel::class, ['user_id' => $user['id']]),
             'aktivePeminjaman' => $this->countWhere(PeminjamanModel::class, ['user_id' => $user['id'], 'status_peminjaman' => 'aktif']),
             'selesaiPeminjaman' => $this->countWhere(PeminjamanModel::class, ['user_id' => $user['id'], 'status_peminjaman' => 'selesai']),
-            'totalPengambilan' => $this->countWhere(PengambilanAsetModel::class, ['mitra_id' => $user['id']]),
-            'pendingPengambilan' => (new PengambilanAsetModel())
-                ->where('mitra_id', $user['id'])
-                ->whereIn('status', ['request', 'waiting', 'pickup', 'confirmation'])
-                ->countAllResults(),
-            'completedPengambilan' => $this->countWhere(PengambilanAsetModel::class, ['mitra_id' => $user['id'], 'status' => 'done']),
         ];
         $data['currentLoans'] = $this->getCurrentLoans((int) $user['id']);
-        $data['recentPickups'] = $this->getRecentPickups((int) $user['id']);
 
         return view('dashboard/index', $data);
     }

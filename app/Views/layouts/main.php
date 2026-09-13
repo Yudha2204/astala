@@ -30,11 +30,9 @@ $navSections = [
         ],
     ],
     [
-        'label' => 'Keluar Masuk Aset',
+        'label' => 'Gudang',
         'items' => [
             ['label' => 'Gudang', 'url' => '/admin/gudang', 'show' => true, 'icon' => 'building'],
-            ['label' => 'Aset Material', 'url' => '/admin/aset-material', 'show' => in_array($role, ['admin', 'pj_gudang'], true), 'icon' => 'box'],
-            ['label' => 'Pengambilan Aset', 'url' => in_array($role, ['admin', 'pj_gudang'], true) ? '/pengambilan/admin' : '/pengambilan', 'show' => true, 'icon' => 'check'],
         ],
     ],
     [

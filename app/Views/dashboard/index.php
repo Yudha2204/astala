@@ -140,16 +140,15 @@ $icons = [
             </div>
         </div>
     <?php else: ?>
-        <!-- Karyawan Dashboard: Peminjaman & Pengambilan -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <?= astala_stat_card('Peminjaman Aktif', $stats['aktivePeminjaman'] ?? 0, 'blue', $icons['clipboard'], site_url('peminjaman/history')) ?>
+        <!-- Karyawan Dashboard: Peminjaman -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <?= astala_stat_card('Total Peminjaman', $stats['totalPeminjaman'] ?? 0, 'blue', $icons['clipboard'], site_url('peminjaman/history')) ?>
+            <?= astala_stat_card('Peminjaman Aktif', $stats['aktivePeminjaman'] ?? 0, 'teal', $icons['clock'], site_url('peminjaman/history')) ?>
             <?= astala_stat_card('Sudah Dikembalikan', $stats['selesaiPeminjaman'] ?? 0, 'green', $icons['check'], site_url('peminjaman/history')) ?>
-            <?= astala_stat_card('Pengambilan Selesai', $stats['completedPengambilan'] ?? 0, 'teal', $icons['check'], site_url('pengambilan')) ?>
-            <?= astala_stat_card('Pengambilan Diproses', $stats['pendingPengambilan'] ?? 0, 'yellow', $icons['clock'], site_url('pengambilan')) ?>
         </div>
 
         <!-- Quick Actions -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <a href="<?= site_url('peminjaman/items') ?>" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-blue-500 dark:hover:border-blue-500 transition-colors group shadow-sm">
                 <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/10 rounded-xl flex items-center justify-center mb-3 group-hover:bg-blue-200 dark:group-hover:bg-blue-500/20 transition-colors">
                     <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['plus'] ?></svg>
@@ -173,14 +172,6 @@ $icons = [
                 <p class="font-medium text-gray-900 dark:text-white">Lokasi Gudang</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">Lihat data gudang</p>
             </a>
-
-            <a href="<?= site_url('pengambilan/request') ?>" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-blue-500 dark:hover:border-blue-500 transition-colors group shadow-sm">
-                <div class="w-12 h-12 bg-amber-100 dark:bg-amber-500/10 rounded-xl flex items-center justify-center mb-3">
-                    <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['archive'] ?></svg>
-                </div>
-                <p class="font-medium text-gray-900 dark:text-white">Request Aset</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Permintaan material baru</p>
-            </a>
         </div>
 
         <!-- Barang yang Sedang Dipinjam -->
@@ -199,27 +190,6 @@ $icons = [
                             </div>
                             <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">Aktif</span>
                         </div>
-                    <?php endforeach ?>
-                </div>
-            </div>
-        <?php endif ?>
-
-        <!-- Pengambilan Terakhir -->
-        <?php if (! empty($recentPickups)): ?>
-            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
-                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Pengambilan Material Terakhir</h2>
-                    <a href="<?= site_url('pengambilan') ?>" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">Lihat Semua</a>
-                </div>
-                <div class="divide-y divide-gray-200 dark:divide-gray-700">
-                    <?php foreach ($recentPickups as $pickup): ?>
-                        <a href="<?= site_url('pengambilan/detail/' . $pickup['id']) ?>" class="flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                            <div>
-                                <p class="font-medium text-gray-900 dark:text-white text-xs">#<?= esc($pickup['id']) ?> - <?= esc($pickup['gudang_nama'] ?? 'Unknown') ?></p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400"><?= esc($pickup['item_count'] ?? 0) ?> item - <?= esc(astala_format_datetime($pickup['tanggal_request'] ?? $pickup['created_at'] ?? null)) ?></p>
-                            </div>
-                            <span class="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"><?= esc(astala_status_label($pickup['status'])) ?></span>
-                        </a>
                     <?php endforeach ?>
                 </div>
             </div>
