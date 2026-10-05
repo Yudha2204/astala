@@ -45,15 +45,19 @@ $old = static fn (string $key, $default = '') => old($key) !== null ? old($key) 
 
                 <section class="bg-blue-50 border border-blue-200 dark:bg-blue-500/5 dark:border-blue-500/30 rounded-lg p-4">
                     <h4 class="font-medium text-blue-600 dark:text-blue-400 mb-2">Verifikasi Identitas Barang</h4>
-                    <?php if ($barang['wajib_qr']): ?>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Scan barcode barang untuk memverifikasi</p>
-                        <button type="button" onclick="openScannerForVerification('<?= esc($barang['nomor_seri'], 'js') ?>')" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-blue-500/10 border border-blue-300 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/20">
-                            Scan Barcode
-                        </button>
-                    <?php else: ?>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Input nomor seri barang secara manual</p>
-                        <input type="text" id="manual_sn_input" class="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Input nomor seri manual..." oninput="verifyManualSN(this.value, '<?= esc($barang['nomor_seri'], 'js') ?>')">
-                    <?php endif ?>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Scan barcode atau masukkan nomor seri secara manual untuk memverifikasi</p>
+                    <div class="space-y-3">
+                        <div>
+                            <button type="button" onclick="openScannerForVerification('<?= esc($barang['nomor_seri'], 'js') ?>')" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-blue-500/10 border border-blue-300 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/20 font-medium text-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                                Scan Barcode
+                            </button>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Isi Manual Nomor Seri</label>
+                            <input type="text" id="manual_sn_input" class="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="Ketik nomor seri manual..." oninput="verifyManualSN(this.value, '<?= esc($barang['nomor_seri'], 'js') ?>')">
+                        </div>
+                    </div>
                     <div id="scan-result" class="hidden mt-3 px-3 py-2 rounded-lg text-sm"></div>
                 </section>
 
@@ -67,15 +71,9 @@ $old = static fn (string $key, $default = '') => old($key) !== null ? old($key) 
                     <textarea name="keperluan" rows="2" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="Jelaskan keperluan peminjaman"><?= esc($old('keperluan', $peminjaman['keperluan'] ?? '')) ?></textarea>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal & Jam Pinjam *</label>
-                        <input type="datetime-local" name="tanggal_pinjam" id="tanggal_pinjam" required value="<?= esc($old('tanggal_pinjam')) ?>" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal & Jam Kembali *</label>
-                        <input type="datetime-local" name="tanggal_kembali_rencana" id="tanggal_kembali" required value="<?= esc($old('tanggal_kembali_rencana')) ?>" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal Pinjam *</label>
+                    <input type="date" name="tanggal_pinjam" id="tanggal_pinjam" required value="<?= esc($old('tanggal_pinjam', date('Y-m-d'))) ?>" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
 
                 <div>
@@ -100,15 +98,6 @@ $old = static fn (string $key, $default = '') => old($key) !== null ? old($key) 
 </div>
 
 <script>
-const now = new Date();
-const tanggalPinjam = document.getElementById('tanggal_pinjam');
-const tanggalKembali = document.getElementById('tanggal_kembali');
-const minDate = now.toISOString().slice(0, 16);
-if (tanggalPinjam && !tanggalPinjam.value) tanggalPinjam.min = minDate;
-if (tanggalKembali && !tanggalKembali.value) tanggalKembali.min = minDate;
-if (tanggalPinjam && tanggalKembali) {
-    tanggalPinjam.addEventListener('change', function () { tanggalKembali.min = this.value; });
-}
 function openScannerForVerification(expectedCode) {
     window.expectedBarcode = expectedCode;
     openScanner('barcode_detected', true);
@@ -116,15 +105,22 @@ function openScannerForVerification(expectedCode) {
 function verifyManualSN(value, expected) {
     const resultDiv = document.getElementById('scan-result');
     const barcodeInput = document.getElementById('barcode_detected');
-    if (value === expected) {
-        resultDiv.className = 'mt-3 px-3 py-2 rounded-lg text-sm bg-green-50 text-green-600';
-        resultDiv.textContent = 'Nomor seri cocok';
-        barcodeInput.value = value;
+    const val = (value || '').trim();
+    if (!val) {
+        resultDiv.className = 'hidden';
+        barcodeInput.value = '';
+        return;
+    }
+    if (val === expected) {
+        resultDiv.className = 'mt-3 px-3 py-2 rounded-lg text-sm bg-green-50 text-green-600 border border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/30';
+        resultDiv.textContent = '✓ Nomor seri cocok';
+        barcodeInput.value = val;
     } else {
-        resultDiv.className = 'mt-3 px-3 py-2 rounded-lg text-sm bg-red-50 text-red-600';
-        resultDiv.textContent = 'Nomor seri tidak cocok';
+        resultDiv.className = 'mt-3 px-3 py-2 rounded-lg text-sm bg-red-50 text-red-600 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/30';
+        resultDiv.textContent = '✗ Nomor seri tidak cocok';
         barcodeInput.value = '';
     }
+    resultDiv.classList.remove('hidden');
 }
 function previewPhotos(input) {
     const preview = document.getElementById('photo_preview');

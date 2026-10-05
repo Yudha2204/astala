@@ -65,10 +65,12 @@ $statusBadge = match ($peminjaman['status_peminjaman']) {
                     <p class="text-xs text-gray-500 uppercase mb-1">Tanggal Pinjam</p>
                     <p class="text-gray-900 dark:text-white"><?= esc($fmt($peminjaman['tanggal_pinjam'])) ?></p>
                 </div>
-                <div>
-                    <p class="text-xs text-gray-500 uppercase mb-1">Deadline Kembali</p>
-                    <p class="text-gray-900 dark:text-white"><?= esc($fmt($peminjaman['tanggal_kembali_rencana'])) ?></p>
-                </div>
+                <?php if ($peminjaman['tanggal_kembali_rencana']): ?>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase mb-1">Deadline Kembali</p>
+                        <p class="text-gray-900 dark:text-white"><?= esc($fmt($peminjaman['tanggal_kembali_rencana'])) ?></p>
+                    </div>
+                <?php endif ?>
                 <?php if ($peminjaman['tanggal_kembali_aktual']): ?>
                     <div>
                         <p class="text-xs text-gray-500 uppercase mb-1">Tanggal Dikembalikan</p>
@@ -93,12 +95,6 @@ $statusBadge = match ($peminjaman['status_peminjaman']) {
                 <?php endforeach ?>
             </div>
         </section>
-    <?php endif ?>
-
-    <?php if ($peminjaman['status_peminjaman'] === 'aktif' && (int) $peminjaman['user_id'] === (int) ($user['id'] ?? 0)): ?>
-        <div class="flex justify-end">
-            <a href="<?= site_url('peminjaman/return/' . $peminjaman['id']) ?>" class="block w-full sm:w-auto px-8 py-3 text-center bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 shadow-lg shadow-blue-500/25">Kembalikan Barang</a>
-        </div>
     <?php endif ?>
 </div>
 

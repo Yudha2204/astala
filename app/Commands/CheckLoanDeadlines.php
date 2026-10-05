@@ -32,6 +32,7 @@ class CheckLoanDeadlines extends BaseCommand
         $loans = $this->loanBuilder()
             ->where('p.status_peminjaman', 'aktif')
             ->where('p.reminder_sent', 0)
+            ->where('p.tanggal_kembali_rencana IS NOT NULL')
             ->where('p.tanggal_kembali_rencana >=', $now->format('Y-m-d H:i:s'))
             ->where('p.tanggal_kembali_rencana <=', $oneHourLater->format('Y-m-d H:i:s'))
             ->get()
@@ -62,6 +63,7 @@ class CheckLoanDeadlines extends BaseCommand
         $loans = $this->loanBuilder()
             ->where('p.status_peminjaman', 'aktif')
             ->where('p.is_late', 0)
+            ->where('p.tanggal_kembali_rencana IS NOT NULL')
             ->where('p.tanggal_kembali_rencana <', $now->format('Y-m-d H:i:s'))
             ->get()
             ->getResultArray();

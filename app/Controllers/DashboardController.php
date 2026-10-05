@@ -35,7 +35,7 @@ class DashboardController extends BaseController
             'notifications' => $notifications,
             'unreadNotifications' => $unreadNotifications,
             'stats' => [],
-            'overdueLoans' => $this->getOverdueLoans(),
+            'overdueLoans' => [],
             'currentLoans' => [],
             'recentPickups' => [],
         ];

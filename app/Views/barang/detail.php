@@ -96,7 +96,7 @@ function barang_dt(?string $date): string
                                 <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700/50">
                                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
                                         <h3 class="text-blue-600 dark:text-blue-400 font-medium text-sm">Dipinjam</h3>
-                                        <span class="text-xs text-gray-500"><?= esc(barang_dt($loan['tanggal_pinjam'])) ?></span>
+                                        <span class="text-xs text-gray-500"><?= esc(barang_dt($loan['tanggal_pinjam'] ?? $loan['created_at'] ?? null)) ?></span>
                                     </div>
                                     <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">Oleh <span class="text-gray-900 dark:text-white font-medium"><?= esc($loan['user_nama'] ?? 'Pengguna Terhapus') ?></span> (<?= esc($loan['user_role'] ?? '-') ?>)</p>
                                     <?php if ($loan['lokasi_peminjaman']): ?><p class="text-sm text-gray-500 dark:text-gray-400">Lokasi Barang: <?= esc($loan['lokasi_peminjaman']) ?></p><?php endif ?>

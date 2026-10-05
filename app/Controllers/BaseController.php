@@ -41,6 +41,8 @@ abstract class BaseController extends Controller
         // Caution: Do not edit this line.
         parent::initController($request, $response, $logger);
 
+        date_default_timezone_set('Asia/Jakarta');
+
         $this->session = service('session');
     }
 }

@@ -49,12 +49,12 @@ $action = $isEdit ? site_url('barang/edit/' . $barang['id']) : site_url('barang/
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kategori</label>
-                    <input type="text" name="kategori" value="<?= esc($barang['kategori'] ?? '') ?>" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Contoh: Elektronik, Tools, dll">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kategori *</label>
+                    <input type="text" name="kategori" required value="<?= esc($barang['kategori'] ?? '') ?>" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Contoh: Elektronik, Tools, dll">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kondisi Barang *</label>
-                    <select name="status_kondisi" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select name="status_kondisi" required class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="baik" <?= ($barang['status_kondisi'] ?? 'baik') === 'baik' ? 'selected' : '' ?>>Baik</option>
                         <option value="rusak" <?= ($barang['status_kondisi'] ?? '') === 'rusak' ? 'selected' : '' ?>>Rusak</option>
                     </select>
@@ -72,9 +72,9 @@ $action = $isEdit ? site_url('barang/edit/' . $barang['id']) : site_url('barang/
             <?php endif ?>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lokasi Penyimpanan</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lokasi Penyimpanan *</label>
                 <?php $currentLokasi = old('lokasi_penyimpanan', $barang['lokasi_penyimpanan'] ?? ''); ?>
-                <select name="lokasi_penyimpanan" id="lokasi_penyimpanan" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <select name="lokasi_penyimpanan" id="lokasi_penyimpanan" required class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     <option value="">-- Pilih Lokasi Penyimpanan --</option>
                     <?php 
                     $gudangNames = [];
@@ -97,12 +97,12 @@ $action = $isEdit ? site_url('barang/edit/' . $barang['id']) : site_url('barang/
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Deskripsi</label>
-                <textarea name="deskripsi" rows="3" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="Deskripsi barang (opsional)"><?= esc($barang['deskripsi'] ?? '') ?></textarea>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Deskripsi *</label>
+                <textarea name="deskripsi" rows="3" required class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="Deskripsi barang"><?= esc($barang['deskripsi'] ?? '') ?></textarea>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Foto Barang (Maks 5 foto)</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Foto Barang (Maks 5 foto) *</label>
                 <?php if ($isEdit && ! empty($barang['fotos'])): ?>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Foto saat ini (<?= count($barang['fotos']) ?>/5):</p>
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4" id="existing_photos">
@@ -184,5 +184,24 @@ function openDeleteModal() {
 function closeDeleteModal() {
     document.getElementById('deleteModal').classList.add('hidden');
 }
+
+document.getElementById('barangForm')?.addEventListener('submit', function(e) {
+    const isEdit = <?= $isEdit ? 'true' : 'false' ?>;
+    const fotoInput = document.getElementById('foto_input');
+    const existingPhotos = document.querySelectorAll('#existing_photos [data-photo-id]').length;
+    const uploadedPhotosCount = fotoInput && fotoInput.files ? fotoInput.files.length : 0;
+
+    if (!isEdit && uploadedPhotosCount === 0) {
+        e.preventDefault();
+        alert('Foto barang wajib diunggah (minimal 1 foto)');
+        return false;
+    }
+
+    if (isEdit && existingPhotos === 0 && uploadedPhotosCount === 0) {
+        e.preventDefault();
+        alert('Foto barang wajib diunggah (minimal 1 foto)');
+        return false;
+    }
+});
 </script>
 <?= $this->endSection() ?>

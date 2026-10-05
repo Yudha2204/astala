@@ -68,9 +68,30 @@ class BarangController extends BaseController
         $payload = $this->payload();
         $payload['status_ketersediaan'] = 'tersedia';
 
+        if (empty($payload['nama_barang']) || empty($payload['nomor_seri']) || empty($payload['kategori']) || empty($payload['lokasi_penyimpanan']) || empty($payload['deskripsi']) || empty($payload['status_kondisi'])) {
+            return redirect()->to('/barang/add')->with('error', 'Semua bidang bertanda bintang (*) wajib diisi')->withInput();
+        }
+
+        $files = $this->request->getFiles()['fotos'] ?? [];
+        $files = is_array($files) ? $files : [$files];
+        $hasPhoto = false;
+        foreach ($files as $file) {
+            if ($file && $file->isValid() && ! $file->hasMoved()) {
+                $hasPhoto = true;
+                break;
+            }
+        }
+        if (! $hasPhoto) {
+            return redirect()->to('/barang/add')->with('error', 'Foto barang wajib diunggah (minimal 1 foto)')->withInput();
+        }
+
         if ((new BarangModel())->where('nomor_seri', $payload['nomor_seri'])->first()) {
             return redirect()->to('/barang/add')->with('error', 'Nomor seri sudah terdaftar')->withInput();
         }
+
+        $now = date('Y-m-d H:i:s');
+        $payload['created_at'] = $now;
+        $payload['updated_at'] = $now;
 
         $barangModel = new BarangModel();
         $barangId = $barangModel->insert($payload, true);
@@ -116,6 +137,10 @@ class BarangController extends BaseController
         $payload = $this->payload();
         $payload['status_ketersediaan'] = $this->request->getPost('status_ketersediaan') ?: 'tersedia';
 
+        if (empty($payload['nama_barang']) || empty($payload['nomor_seri']) || empty($payload['kategori']) || empty($payload['lokasi_penyimpanan']) || empty($payload['deskripsi']) || empty($payload['status_kondisi'])) {
+            return redirect()->to('/barang/edit/' . $id)->with('error', 'Semua bidang bertanda bintang (*) wajib diisi')->withInput();
+        }
+
         $duplicate = (new BarangModel())
             ->where('nomor_seri', $payload['nomor_seri'])
             ->where('id !=', $id)
@@ -125,6 +150,7 @@ class BarangController extends BaseController
             return redirect()->to('/barang/edit/' . $id)->with('error', 'Nomor seri sudah digunakan barang lain')->withInput();
         }
 
+        $payload['updated_at'] = date('Y-m-d H:i:s');
         $barangModel->update($id, $payload);
         $this->deletePhotosFromPost($id);
         $this->savePhotos($id);

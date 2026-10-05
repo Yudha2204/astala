@@ -39,19 +39,15 @@ $img = static fn ($loan): ?string => ! empty($loan['barang']['fotos'][0]['foto_p
                                         </div>
                                         <div>
                                             <div class="text-xs font-medium text-gray-900 dark:text-white"><?= esc($loan['barang']['nama_barang']) ?></div>
-                                            <?php if ($loan['isOverdue']): ?>
-                                                <div class="text-xs text-red-500 font-medium mt-0.5">Terlambat</div>
-                                            <?php endif ?>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 font-mono"><?= esc($loan['barang']['nomor_seri']) ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400"><?= esc($fmt($loan['tanggal_pinjam'])) ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-xs <?= $loan['isOverdue'] ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-500 dark:text-gray-400' ?>"><?= esc($fmt($loan['tanggal_kembali_rencana'])) ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400"><?= esc($fmt($loan['tanggal_kembali_rencana'])) ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400"><?= esc($loan['lokasi_peminjaman']) ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center sticky right-0 bg-white dark:bg-gray-800">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <a href="<?= site_url('peminjaman/return/' . $loan['id']) ?>" class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded-lg text-xs dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30">Kembalikan</a>
+                                    <div class="flex items-center justify-center">
                                         <a href="<?= site_url('peminjaman/detail/' . $loan['id']) ?>" class="inline-flex items-center px-3 py-1.5 bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-200 rounded-lg text-xs dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/30">Detail</a>
                                     </div>
                                 </td>

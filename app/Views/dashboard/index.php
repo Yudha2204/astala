@@ -94,7 +94,6 @@ $icons = [
             <?php if ($dashboardType === 'admin'): ?>
                 <?= astala_stat_card('Total User', $stats['totalUser'] ?? 0, 'cyan', $icons['users'], site_url('admin/users')) ?>
             <?php endif ?>
-            <?= astala_stat_card('Terlambat', count($overdueLoans ?? []), 'orange', $icons['warning']) ?>
         </div>
 
         <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
@@ -108,35 +107,6 @@ $icons = [
             </div>
             <div class="p-5">
                 <div class="relative w-full h-[250px]"><canvas id="loanChart"></canvas></div>
-            </div>
-        </div>
-
-
-
-        <div class="bg-white dark:bg-gray-800 border border-red-200 dark:border-red-500/50 rounded-xl shadow-sm">
-            <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-red-600 dark:text-red-400">Barang Terlambat</h2>
-                <a href="<?= site_url('admin/loans?is_late=true') ?>" class="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">Lihat Semua</a>
-            </div>
-            <div class="p-5">
-                <?php if ($overdueLoans): ?>
-                    <div class="space-y-4">
-                        <?php foreach ($overdueLoans as $loan): ?>
-                            <div class="flex items-center gap-4 p-4 bg-red-50 border border-red-100 dark:bg-red-500/5 dark:border-red-500/20 rounded-lg">
-                                <div class="w-10 h-10 bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $icons['warning'] ?></svg>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate"><?= esc($loan['nama_barang'] ?? '-') ?></p>
-                                    <p class="text-xs text-gray-600 dark:text-gray-400 truncate">Dipinjam oleh: <?= esc($loan['user_nama'] ?? '-') ?></p>
-                                    <p class="text-xs text-red-600 dark:text-red-400">Deadline: <?= esc(astala_format_datetime($loan['tanggal_kembali_rencana'] ?? null)) ?></p>
-                                </div>
-                            </div>
-                        <?php endforeach ?>
-                    </div>
-                <?php else: ?>
-                    <p class="text-gray-500 dark:text-gray-400 text-center py-8">Tidak ada barang terlambat.</p>
-                <?php endif ?>
             </div>
         </div>
     <?php else: ?>

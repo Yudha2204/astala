@@ -63,6 +63,7 @@ class PeminjamanController extends BaseController
 
     public function form()
     {
+        $this->ensurePeminjamanSchema();
         $user = session('user');
         $peminjamanId = (int) ($this->request->getGet('peminjaman_id') ?? 0);
         $barangId = (int) ($this->request->getGet('barang_id') ?? 0);
@@ -97,6 +98,7 @@ class PeminjamanController extends BaseController
 
     public function borrow()
     {
+        $this->ensurePeminjamanSchema();
         $validation = $this->validateBorrowDates();
         if ($validation !== true) {
             return redirect()->back()->withInput()->with('error', $validation);
@@ -134,7 +136,7 @@ class PeminjamanController extends BaseController
 
             if ($barcodeDetected && $barcodeDetected !== $barang['nomor_seri']) {
                 $db->transRollback();
-                return redirect()->back()->withInput()->with('error', 'Barcode tidak cocok dengan barang yang dipilih');
+                return redirect()->back()->withInput()->with('error', 'Barcode/nomor seri tidak cocok dengan barang yang dipilih');
             }
 
             if ($barang['status_ketersediaan'] !== 'tersedia' && $peminjamanId === 0) {
@@ -142,14 +144,17 @@ class PeminjamanController extends BaseController
                 return redirect()->to('/peminjaman/items')->with('error', 'Barang sedang tidak tersedia');
             }
 
+            $now = date('Y-m-d H:i:s');
             $payload = [
                 'user_id' => $user['id'] ?? null,
                 'barang_id' => $barang['id'],
                 'lokasi_peminjaman' => trim((string) $this->request->getPost('lokasi_peminjaman')),
                 'keperluan' => trim((string) $this->request->getPost('keperluan')) ?: null,
                 'tanggal_pinjam' => $this->toSqlDate((string) $this->request->getPost('tanggal_pinjam')),
-                'tanggal_kembali_rencana' => $this->toSqlDate((string) $this->request->getPost('tanggal_kembali_rencana')),
+                'tanggal_kembali_rencana' => null,
                 'status_peminjaman' => 'aktif',
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
 
             if ($peminjamanId > 0) {
@@ -176,12 +181,12 @@ class PeminjamanController extends BaseController
 
     public function current()
     {
+        $this->ensurePeminjamanSchema();
         $user = session('user');
-        $loans = $this->loanRows(['p.user_id' => $user['id'] ?? 0, 'p.status_peminjaman' => 'aktif'], null, 0, 'p.tanggal_kembali_rencana ASC');
-        $now = new DateTimeImmutable();
+        $loans = $this->loanRows(['p.user_id' => $user['id'] ?? 0, 'p.status_peminjaman' => 'aktif'], null, 0, 'p.tanggal_pinjam DESC');
 
         foreach ($loans as &$loan) {
-            $loan['isOverdue'] = $this->isPast($loan['tanggal_kembali_rencana'], $now);
+            $loan['isOverdue'] = false;
         }
 
         return view('peminjaman/current', [
@@ -193,22 +198,7 @@ class PeminjamanController extends BaseController
 
     public function returnForm(int $id)
     {
-        $user = session('user');
-        $peminjaman = $this->loanDetail($id);
-
-        if (! $peminjaman || (int) $peminjaman['user_id'] !== (int) ($user['id'] ?? 0)) {
-            return redirect()->to('/peminjaman/current')->with('error', 'Peminjaman tidak ditemukan');
-        }
-
-        if ($peminjaman['status_peminjaman'] !== 'aktif') {
-            return redirect()->to('/peminjaman/current')->with('error', 'Peminjaman sudah selesai');
-        }
-
-        return view('peminjaman/return', [
-            'title' => 'Pengembalian Barang - ASTALA',
-            'user' => $user,
-            'peminjaman' => $peminjaman,
-        ]);
+        return redirect()->to('/peminjaman/current')->with('error', 'Fitur pengembalian barang sudah tidak digunakan');
     }
 
     public function returnItem(int $id)
@@ -450,27 +440,18 @@ class PeminjamanController extends BaseController
 
     private function validateBorrowDates()
     {
-        $pinjam = $this->parseInputDate((string) $this->request->getPost('tanggal_pinjam'));
-        $kembali = $this->parseInputDate((string) $this->request->getPost('tanggal_kembali_rencana'));
-        $now = new DateTimeImmutable('-1 minute');
+        $input = trim((string) $this->request->getPost('tanggal_pinjam'));
+        if ($input === '') {
+            return 'Tanggal pinjam wajib diisi';
+        }
 
+        $pinjam = $this->parseInputDate($input);
         if (! $pinjam) {
-            return 'Tanggal pinjam tidak valid';
+            return 'Format tanggal pinjam tidak valid';
         }
-        if (! $kembali) {
-            return 'Tanggal kembali tidak valid';
-        }
-        if ($pinjam < $now || $kembali < $now) {
-            return 'Tanggal tidak boleh di masa lalu';
-        }
-        if ($kembali <= $pinjam) {
-            return 'Tanggal kembali harus setelah tanggal pinjam';
-        }
-        if (! $this->isOfficeHours($pinjam)) {
-            return 'Tanggal pinjam harus pada jam kerja (Senin-Jumat, 08:00-17:00 WIB)';
-        }
-        if (! $this->isOfficeHours($kembali)) {
-            return 'Tanggal kembali harus pada jam kerja (Senin-Jumat, 08:00-17:00 WIB)';
+
+        if ($pinjam->format('Y-m-d') < date('Y-m-d')) {
+            return 'Tanggal pinjam tidak boleh di masa lalu';
         }
 
         return true;
@@ -478,27 +459,37 @@ class PeminjamanController extends BaseController
 
     private function parseInputDate(string $value): ?DateTimeImmutable
     {
-        if (trim($value) === '') {
+        $val = trim($value);
+        if ($val === '') {
             return null;
         }
 
-        $date = DateTimeImmutable::createFromFormat('Y-m-d\TH:i', $value)
-            ?: DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $value);
+        $date = DateTimeImmutable::createFromFormat('Y-m-d', $val)
+            ?: DateTimeImmutable::createFromFormat('Y-m-d\TH:i', $val)
+            ?: DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $val);
 
         return $date ?: null;
     }
 
     private function toSqlDate(string $value): string
     {
-        return ($this->parseInputDate($value) ?? new DateTimeImmutable())->format('Y-m-d H:i:s');
+        $parsed = $this->parseInputDate($value);
+        if (! $parsed) {
+            return date('Y-m-d H:i:s');
+        }
+
+        // Attach current real-time hour, minute, second to the selected date
+        return $parsed->format('Y-m-d') . ' ' . date('H:i:s');
     }
 
-    private function isOfficeHours(DateTimeImmutable $date): bool
+    private function ensurePeminjamanSchema(): void
     {
-        $day = (int) $date->format('N');
-        $minutes = ((int) $date->format('G')) * 60 + (int) $date->format('i');
-
-        return $day >= 1 && $day <= 5 && $minutes >= 480 && $minutes <= 1020;
+        try {
+            $db = db_connect();
+            $db->query("ALTER TABLE `peminjaman` MODIFY COLUMN `tanggal_kembali_rencana` DATETIME NULL DEFAULT NULL");
+        } catch (\Throwable) {
+            // Silently ignore if lacking ALTER TABLE or already nullable
+        }
     }
 
     private function isPast(?string $value, DateTimeImmutable $reference): bool

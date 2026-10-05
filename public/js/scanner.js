@@ -30,6 +30,9 @@ function openScanner(targetInputId, verifyMode = false) {
     document.getElementById('scanner-modal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 
+    const manualInput = document.getElementById('manual-barcode-input');
+    if (manualInput) manualInput.value = '';
+
     setTimeout(startScanner, 100);
 }
 
@@ -96,15 +99,16 @@ function createScannerModal() {
             </div>
             <div class="p-4 bg-gray-800">
                 <p id="scanner-status" class="text-sm text-yellow-400 text-center">Memulai kamera...</p>
-                <p class="text-xs text-gray-500 text-center mt-1">Barcode kecil? Geser slider zoom ke kanan</p>
-                <div id="manual-input-section" class="mt-3 hidden">
+                <div id="manual-input-section" class="mt-3 pt-3 border-t border-gray-700">
+                    <p class="text-xs text-gray-400 mb-1.5 font-medium">Atau isi nomor seri secara manual:</p>
                     <div class="flex gap-2">
                         <input type="text" id="manual-barcode-input" 
-                            class="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                            placeholder="Ketik barcode manual...">
-                        <button onclick="submitManualBarcode()" 
-                            class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm font-medium">
-                            OK
+                            class="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+                            placeholder="Ketik nomor seri manual..."
+                            onkeydown="if(event.key === 'Enter') { event.preventDefault(); submitManualBarcode(); }">
+                        <button type="button" onclick="submitManualBarcode()" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                            Gunakan
                         </button>
                     </div>
                 </div>
