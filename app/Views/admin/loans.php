@@ -3,12 +3,24 @@
 <?php
 $fmt = static fn ($date): string => $date ? date('d M Y H:i', strtotime($date)) : '-';
 $query = $query ?? [];
+$barangs = $barangs ?? [];
+$hasFilters = ($query['search'] ?? '') !== '' || ($query['status'] ?? '') !== '' || ($query['is_late'] ?? '') !== '' || ($query['barang_id'] ?? '') !== '';
+$selectedBarangObj = null;
+if (!empty($query['barang_id'])) {
+    foreach ($barangs as $b) {
+        if ((string)$b['id'] === (string)$query['barang_id']) {
+            $selectedBarangObj = $b;
+            break;
+        }
+    }
+}
 $paramsWithoutPage = static function (array $extra = []) use ($query): string {
     $params = array_filter([
         'search' => $query['search'] ?? '',
         'status' => $query['status'] ?? '',
         'is_late' => $query['is_late'] ?? '',
-    ], static fn ($value) => $value !== '');
+        'barang_id' => $query['barang_id'] ?? '',
+    ], static fn ($value) => $value !== '' && $value !== null);
     return http_build_query(array_merge($params, $extra));
 };
 $exportUrl = static function () use ($query): string {
@@ -16,6 +28,7 @@ $exportUrl = static function () use ($query): string {
         'search' => $query['search'] ?? '',
         'status' => $query['status'] ?? '',
         'is_late' => $query['is_late'] ?? '',
+        'barang_id' => $query['barang_id'] ?? '',
     ], static fn ($value) => $value !== '' && $value !== null);
 
     return site_url('admin/report/pdf/loans') . ($params ? '?' . http_build_query($params) : '');
@@ -35,24 +48,50 @@ $statusBadge = static function (array $loan): string {
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Semua Peminjaman</h1>
             <p class="text-gray-500 dark:text-gray-400">Total <?= esc($pagination['total']) ?> peminjaman</p>
         </div>
-        <a href="<?= esc($exportUrl()) ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 font-medium rounded-lg hover:bg-gray-50 border border-gray-200 shadow-sm">Export PDF</a>
+        <a href="<?= esc($exportUrl()) ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 font-medium rounded-lg hover:bg-gray-50 border border-gray-200 shadow-sm">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            Export PDF
+        </a>
     </div>
 
-    <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+    <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm space-y-3">
         <form action="<?= site_url('admin/loans') ?>" method="GET" class="flex flex-col md:flex-row items-center gap-3">
-            <input type="text" name="search" id="searchLoans" value="<?= esc($query['search'] ?? '') ?>" placeholder="Cari peminjaman..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 text-xs">
-            <button type="submit" class="w-full md:w-auto px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium shadow-sm shadow-blue-500/20">Cari</button>
+            <div class="w-full md:flex-1 flex gap-2">
+                <input type="text" name="search" id="searchLoans" value="<?= esc($query['search'] ?? '') ?>" placeholder="Cari peminjaman..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 text-xs">
+                <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium shadow-sm shadow-blue-500/20 whitespace-nowrap">Cari</button>
+            </div>
             <input type="hidden" name="status" id="statusFilter" value="<?= esc($query['status'] ?? '') ?>">
             <input type="hidden" name="is_late" id="lateFilter" value="<?= esc($query['is_late'] ?? '') ?>">
-            <select id="unifiedFilter" onchange="handleLoanFilter(this.value)" class="w-full md:w-auto px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white text-xs cursor-pointer min-w-[160px] focus:ring-2 focus:ring-blue-500">
-                <option value="">Semua Filter</option>
-                <option value="status-aktif" <?= ($query['status'] ?? '') === 'aktif' ? 'selected' : '' ?>>Aktif</option>
-                <option value="status-selesai" <?= ($query['status'] ?? '') === 'selesai' ? 'selected' : '' ?>>Selesai</option>
-                <option value="status-dibatalkan" <?= ($query['status'] ?? '') === 'dibatalkan' ? 'selected' : '' ?>>Dibatalkan</option>
-                <option value="late-true" <?= ($query['is_late'] ?? '') === 'true' ? 'selected' : '' ?>>Terlambat</option>
-                <option value="late-false" <?= ($query['is_late'] ?? '') === 'false' ? 'selected' : '' ?>>Tepat Waktu</option>
-            </select>
+            <div class="w-full md:w-auto flex flex-col sm:flex-row items-center gap-3">
+                <select name="barang_id" id="barangFilter" onchange="this.form.submit()" class="w-full sm:w-auto px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white text-xs cursor-pointer min-w-[180px] focus:ring-2 focus:ring-blue-500">
+                    <option value="">Semua Barang</option>
+                    <?php foreach ($barangs as $b): ?>
+                        <option value="<?= $b['id'] ?>" <?= ((string)($query['barang_id'] ?? '')) === (string)$b['id'] ? 'selected' : '' ?>>
+                            <?= esc($b['nama_barang']) ?><?= !empty($b['nomor_seri']) ? ' (' . esc($b['nomor_seri']) . ')' : '' ?>
+                        </option>
+                    <?php endforeach ?>
+                </select>
+                <select id="unifiedFilter" onchange="handleLoanFilter(this.value)" class="w-full sm:w-auto px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white text-xs cursor-pointer min-w-[150px] focus:ring-2 focus:ring-blue-500">
+                    <option value="">Semua Filter</option>
+                    <option value="status-aktif" <?= ($query['status'] ?? '') === 'aktif' ? 'selected' : '' ?>>Aktif</option>
+                    <option value="status-selesai" <?= ($query['status'] ?? '') === 'selesai' ? 'selected' : '' ?>>Selesai</option>
+                    <option value="status-dibatalkan" <?= ($query['status'] ?? '') === 'dibatalkan' ? 'selected' : '' ?>>Dibatalkan</option>
+                    <option value="late-true" <?= ($query['is_late'] ?? '') === 'true' ? 'selected' : '' ?>>Terlambat</option>
+                    <option value="late-false" <?= ($query['is_late'] ?? '') === 'false' ? 'selected' : '' ?>>Tepat Waktu</option>
+                </select>
+                <?php if ($hasFilters): ?>
+                    <a href="<?= site_url('admin/loans') ?>" class="w-full sm:w-auto px-3 py-2.5 text-center bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">Reset</a>
+                <?php endif ?>
+            </div>
         </form>
+
+        <?php if ($selectedBarangObj): ?>
+            <div class="flex items-center gap-2 text-xs text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-500/30 w-fit">
+                <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                <span>Filter barang: <strong class="font-semibold"><?= esc($selectedBarangObj['nama_barang']) ?><?= !empty($selectedBarangObj['nomor_seri']) ? ' (' . esc($selectedBarangObj['nomor_seri']) . ')' : '' ?></strong></span>
+                <a href="<?= site_url('admin/loans') . '?' . $paramsWithoutPage(['barang_id' => '']) ?>" class="ml-1 text-gray-400 hover:text-red-500 font-bold" title="Hapus filter barang">&times;</a>
+            </div>
+        <?php endif ?>
     </section>
 
     <div id="loans-table-container" class="space-y-6">

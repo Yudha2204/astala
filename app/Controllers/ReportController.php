@@ -42,7 +42,10 @@ class ReportController extends BaseController
         $builder = $this->loanBuilder();
         $this->applyLoanFilters($builder);
 
-        return $this->csv('laporan-semua-peminjaman', $this->loanHeaders(), $this->loanRows($builder->get()->getResultArray()));
+        $selectedBarang = $this->selectedBarang();
+        $name = 'laporan-semua-peminjaman' . ($selectedBarang ? '-' . trim(preg_replace('/[^a-zA-Z0-9]+/', '-', strtolower($selectedBarang['nama_barang'])), '-') : '');
+
+        return $this->csv($name, $this->loanHeaders(), $this->loanRows($builder->get()->getResultArray()));
     }
 
     public function exportAsetMaterialFromTemplate()
@@ -163,6 +166,10 @@ class ReportController extends BaseController
 
     private function reportData(string $type): ?array
     {
+        $selectedBarang = in_array($type, ['loans', 'my-loans'], true) ? $this->selectedBarang() : null;
+        $loanTitleSuffix = $selectedBarang ? ' - ' . $selectedBarang['nama_barang'] : '';
+        $loanNameSuffix = $selectedBarang ? '-' . trim(preg_replace('/[^a-zA-Z0-9]+/', '-', strtolower($selectedBarang['nama_barang'])), '-') : '';
+
         return match ($type) {
             'inventory' => [
                 'name' => 'laporan-inventaris',
@@ -171,14 +178,14 @@ class ReportController extends BaseController
                 'rows' => $this->inventoryRows(),
             ],
             'loans' => [
-                'name' => 'laporan-semua-peminjaman',
-                'title' => 'Laporan Semua Peminjaman',
+                'name' => 'laporan-semua-peminjaman' . $loanNameSuffix,
+                'title' => 'Laporan Semua Peminjaman' . $loanTitleSuffix,
                 'headers' => $this->loanHeaders(),
                 'rows' => $this->allLoanRows(),
             ],
             'my-loans' => [
-                'name' => 'laporan-peminjaman-saya',
-                'title' => 'Laporan Peminjaman Saya',
+                'name' => 'laporan-peminjaman-saya' . $loanNameSuffix,
+                'title' => 'Laporan Peminjaman Saya' . $loanTitleSuffix,
                 'headers' => $this->loanHeaders(),
                 'rows' => $this->ownLoanRows(),
             ],
@@ -206,6 +213,10 @@ class ReportController extends BaseController
 
     private function templateReportData(string $type): ?array
     {
+        $selectedBarang = in_array($type, ['loans', 'my-loans'], true) ? $this->selectedBarang() : null;
+        $loanNameSuffix = $selectedBarang ? '-' . trim(preg_replace('/[^a-zA-Z0-9]+/', '-', strtolower($selectedBarang['nama_barang'])), '-') : '';
+        $barangFilterLabel = $selectedBarang ? $selectedBarang['nama_barang'] . (!empty($selectedBarang['nomor_seri']) ? ' (' . $selectedBarang['nomor_seri'] . ')' : '') : 'Semua Barang';
+
         return match ($type) {
             'inventory' => [
                 'name' => 'laporan-inventaris',
@@ -223,22 +234,24 @@ class ReportController extends BaseController
                 ],
             ],
             'loans' => [
-                'name' => 'laporan-semua-peminjaman',
+                'name' => 'laporan-semua-peminjaman' . $loanNameSuffix,
                 'template' => $this->templatePath('template-peminjaman-all.docx'),
                 'scalars' => [
                     'tanggal_cetak' => $this->formatDateTime(date('Y-m-d H:i:s')),
                     'user_cetak' => session('user')['nama'] ?? '-',
                     'total_loans' => count($this->allLoanTemplateRows()),
+                    'barang_filter' => $barangFilterLabel,
                 ],
                 'blocks' => ['loans' => $this->allLoanTemplateRows()],
             ],
             'my-loans' => [
-                'name' => 'laporan-peminjaman-saya',
+                'name' => 'laporan-peminjaman-saya' . $loanNameSuffix,
                 'template' => $this->templatePath('template-peminjaman.docx'),
                 'scalars' => [
                     'tanggal_cetak' => $this->formatDateTime(date('Y-m-d H:i:s')),
                     'user_cetak' => session('user')['nama'] ?? '-',
                     'total_loans' => count($this->loanTemplateRows(true)),
+                    'barang_filter' => $barangFilterLabel,
                 ],
                 'blocks' => ['loans' => $this->loanTemplateRows(true)],
             ],
@@ -605,6 +618,9 @@ class ReportController extends BaseController
             $builder->where('p.created_at >=', $this->request->getGet('start_date') . ' 00:00:00')
                 ->where('p.created_at <=', $this->request->getGet('end_date') . ' 23:59:59');
         }
+        if ($barangId = trim((string) $this->request->getGet('barang_id'))) {
+            $builder->where('p.barang_id', $barangId);
+        }
         if ($search = trim((string) $this->request->getGet('search'))) {
             $builder->groupStart()
                 ->like('u.nama', $search)
@@ -612,6 +628,20 @@ class ReportController extends BaseController
                 ->orLike('b.nomor_seri', $search)
                 ->groupEnd();
         }
+    }
+
+    private function selectedBarang(): ?array
+    {
+        $barangId = trim((string) $this->request->getGet('barang_id'));
+        if ($barangId === '') {
+            return null;
+        }
+
+        return db_connect()->table('barang')
+            ->select('id, nama_barang, nomor_seri')
+            ->where('id', $barangId)
+            ->get()
+            ->getRowArray();
     }
 
     private function loanHeaders(): array

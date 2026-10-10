@@ -247,6 +247,9 @@ class PeminjamanController extends BaseController
         $user = session('user');
         $page = max(1, (int) ($this->request->getGet('page') ?? 1));
         $where = ['p.user_id' => $user['id'] ?? 0];
+        if ($barangId = trim((string) $this->request->getGet('barang_id'))) {
+            $where['p.barang_id'] = $barangId;
+        }
         $total = $this->loanCount($where);
         $loans = $this->loanRows($where, self::HISTORY_PER_PAGE, ($page - 1) * self::HISTORY_PER_PAGE, 'p.created_at DESC');
 
@@ -284,6 +287,7 @@ class PeminjamanController extends BaseController
         $query = [
             'status' => trim((string) $this->request->getGet('status')),
             'is_late' => trim((string) $this->request->getGet('is_late')),
+            'barang_id' => trim((string) $this->request->getGet('barang_id')),
             'search' => trim((string) $this->request->getGet('search')),
             'page' => max(1, (int) ($this->request->getGet('page') ?? 1)),
         ];
@@ -299,10 +303,16 @@ class PeminjamanController extends BaseController
 
         $this->hydrateLoans($loans);
 
+        $barangs = (new BarangModel())
+            ->select('id, nama_barang, nomor_seri')
+            ->orderBy('nama_barang', 'ASC')
+            ->findAll();
+
         return view('admin/loans', [
             'title' => 'Semua Peminjaman - ASTALA',
             'user' => session('user'),
             'loans' => $loans,
+            'barangs' => $barangs,
             'query' => $query,
             'pagination' => $this->pagination($query['page'], $total, self::HISTORY_PER_PAGE),
         ]);
@@ -389,6 +399,10 @@ class PeminjamanController extends BaseController
             $builder->where('p.is_late', 1);
         } elseif ($query['is_late'] === 'false') {
             $builder->where('p.is_late', 0);
+        }
+
+        if (!empty($query['barang_id'])) {
+            $builder->where('p.barang_id', $query['barang_id']);
         }
 
         if ($query['search'] !== '') {
