@@ -167,7 +167,7 @@ class ReportController extends BaseController
     private function reportData(string $type): ?array
     {
         $selectedBarang = in_array($type, ['loans', 'my-loans'], true) ? $this->selectedBarang() : null;
-        $loanTitleSuffix = $selectedBarang ? ' - ' . $selectedBarang['nama_barang'] : '';
+        $loanTitleSuffix = $selectedBarang ? ' - ' . $selectedBarang['nama_barang'] . (!empty($selectedBarang['nomor_seri']) ? ' (' . $selectedBarang['nomor_seri'] . ')' : '') : '';
         $loanNameSuffix = $selectedBarang ? '-' . trim(preg_replace('/[^a-zA-Z0-9]+/', '-', strtolower($selectedBarang['nama_barang'])), '-') : '';
 
         return match ($type) {
@@ -337,11 +337,11 @@ class ReportController extends BaseController
                 'sn' => $row['nomor_seri'] ?? '-',
                 'lokasi' => $row['lokasi_peminjaman'] ?? '-',
                 'tgl_pinjam' => $this->formatDateTime($row['tanggal_pinjam'] ?? null),
-                'tgl_deadline' => $this->formatDateTime($row['tanggal_kembali_rencana'] ?? null),
+                'tgl_deadline' => '-',
                 'tgl_kembali' => $this->formatDateTime($row['tanggal_kembali_aktual'] ?? null),
                 'keperluan' => $row['keperluan'] ?? '-',
                 'status' => strtoupper((string) ($row['status_peminjaman'] ?? '-')),
-                'terlambat' => (int) ($row['is_late'] ?? 0) === 1 ? 'Terlambat' : '',
+                'terlambat' => '',
                 'peminjam_nama' => $row['peminjam'] ?? '-',
                 'peminjam_email' => $row['email'] ?? '-',
                 'nama_peminjam' => $row['peminjam'] ?? '-',
@@ -598,7 +598,7 @@ class ReportController extends BaseController
     private function loanBuilder()
     {
         return db_connect()->table('peminjaman p')
-            ->select('p.id, u.nama AS peminjam, u.email, b.nama_barang, b.nomor_seri, p.lokasi_peminjaman, p.keperluan, p.tanggal_pinjam, p.tanggal_kembali_rencana, p.tanggal_kembali_aktual, p.status_peminjaman, p.is_late, p.created_at')
+            ->select('p.id, u.nama AS peminjam, u.email, b.nama_barang, b.nomor_seri, p.lokasi_peminjaman, p.keperluan, p.tanggal_pinjam, p.tanggal_kembali_aktual, p.status_peminjaman, p.created_at')
             ->join('users u', 'u.id = p.user_id', 'left')
             ->join('barang b', 'b.id = p.barang_id', 'left')
             ->orderBy('p.created_at', 'DESC');
@@ -608,11 +608,6 @@ class ReportController extends BaseController
     {
         if ($this->request->getGet('status')) {
             $builder->where('p.status_peminjaman', $this->request->getGet('status'));
-        }
-        if ($this->request->getGet('is_late') === 'true') {
-            $builder->where('p.is_late', 1);
-        } elseif ($this->request->getGet('is_late') === 'false') {
-            $builder->where('p.is_late', 0);
         }
         if ($this->request->getGet('start_date') && $this->request->getGet('end_date')) {
             $builder->where('p.created_at >=', $this->request->getGet('start_date') . ' 00:00:00')
@@ -626,6 +621,7 @@ class ReportController extends BaseController
                 ->like('u.nama', $search)
                 ->orLike('b.nama_barang', $search)
                 ->orLike('b.nomor_seri', $search)
+                ->orLike('p.keperluan', $search)
                 ->groupEnd();
         }
     }
@@ -646,13 +642,13 @@ class ReportController extends BaseController
 
     private function loanHeaders(): array
     {
-        return ['ID', 'Peminjam', 'Email', 'Barang', 'Nomor Seri', 'Lokasi', 'Keperluan', 'Tanggal Pinjam', 'Deadline', 'Tanggal Kembali', 'Status', 'Terlambat', 'Dibuat'];
+        return ['ID', 'Peminjam', 'Email', 'Barang', 'Nomor Seri', 'Lokasi', 'Keperluan', 'Tanggal Pinjam', 'Tanggal Kembali', 'Status', 'Dibuat'];
     }
 
     private function loanRows(array $rows): array
     {
         return array_map(static function (array $row): array {
-            $row['is_late'] = (int) $row['is_late'] === 1 ? 'Ya' : 'Tidak';
+            $row['tanggal_kembali_aktual'] = !empty($row['tanggal_kembali_aktual']) ? $row['tanggal_kembali_aktual'] : '-';
 
             return $row;
         }, $rows);

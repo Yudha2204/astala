@@ -20,8 +20,8 @@ $img = static fn ($loan): ?string => ! empty($loan['barang']['fotos'][0]['foto_p
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Barang</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">No Seri</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Tanggal Pinjam</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Tanggal Kembali</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Lokasi</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Status</th>
                             <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase sticky right-0 bg-gray-50 dark:bg-gray-900/80">Aksi</th>
                         </tr>
                     </thead>
@@ -44,10 +44,11 @@ $img = static fn ($loan): ?string => ! empty($loan['barang']['fotos'][0]['foto_p
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 font-mono"><?= esc($loan['barang']['nomor_seri']) ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400"><?= esc($fmt($loan['tanggal_pinjam'])) ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400"><?= esc($fmt($loan['tanggal_kembali_rencana'])) ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400"><?= esc($loan['lokasi_peminjaman']) ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400">Aktif</span></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center sticky right-0 bg-white dark:bg-gray-800">
-                                    <div class="flex items-center justify-center">
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        <a href="<?= site_url('peminjaman/return/' . $loan['id']) ?>" class="inline-flex items-center px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 rounded-lg text-xs dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30">Kembalikan</a>
                                         <a href="<?= site_url('peminjaman/detail/' . $loan['id']) ?>" class="inline-flex items-center px-3 py-1.5 bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-200 rounded-lg text-xs dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/30">Detail</a>
                                     </div>
                                 </td>

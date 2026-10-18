@@ -4,7 +4,7 @@
 $fmt = static fn ($date): string => $date ? date('d M Y H:i', strtotime($date)) : '-';
 $query = $query ?? [];
 $barangs = $barangs ?? [];
-$hasFilters = ($query['search'] ?? '') !== '' || ($query['status'] ?? '') !== '' || ($query['is_late'] ?? '') !== '' || ($query['barang_id'] ?? '') !== '';
+$hasFilters = ($query['search'] ?? '') !== '' || ($query['status'] ?? '') !== '' || ($query['barang_id'] ?? '') !== '';
 $selectedBarangObj = null;
 if (!empty($query['barang_id'])) {
     foreach ($barangs as $b) {
@@ -18,7 +18,6 @@ $paramsWithoutPage = static function (array $extra = []) use ($query): string {
     $params = array_filter([
         'search' => $query['search'] ?? '',
         'status' => $query['status'] ?? '',
-        'is_late' => $query['is_late'] ?? '',
         'barang_id' => $query['barang_id'] ?? '',
     ], static fn ($value) => $value !== '' && $value !== null);
     return http_build_query(array_merge($params, $extra));
@@ -27,7 +26,6 @@ $exportUrl = static function () use ($query): string {
     $params = array_filter([
         'search' => $query['search'] ?? '',
         'status' => $query['status'] ?? '',
-        'is_late' => $query['is_late'] ?? '',
         'barang_id' => $query['barang_id'] ?? '',
     ], static fn ($value) => $value !== '' && $value !== null);
 
@@ -61,7 +59,6 @@ $statusBadge = static function (array $loan): string {
                 <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium shadow-sm shadow-blue-500/20 whitespace-nowrap">Cari</button>
             </div>
             <input type="hidden" name="status" id="statusFilter" value="<?= esc($query['status'] ?? '') ?>">
-            <input type="hidden" name="is_late" id="lateFilter" value="<?= esc($query['is_late'] ?? '') ?>">
             <div class="w-full md:w-auto flex flex-col sm:flex-row items-center gap-3">
                 <select name="barang_id" id="barangFilter" onchange="this.form.submit()" class="w-full sm:w-auto px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white text-xs cursor-pointer min-w-[180px] focus:ring-2 focus:ring-blue-500">
                     <option value="">Semua Barang</option>
@@ -72,12 +69,10 @@ $statusBadge = static function (array $loan): string {
                     <?php endforeach ?>
                 </select>
                 <select id="unifiedFilter" onchange="handleLoanFilter(this.value)" class="w-full sm:w-auto px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white text-xs cursor-pointer min-w-[150px] focus:ring-2 focus:ring-blue-500">
-                    <option value="">Semua Filter</option>
+                    <option value="">Semua Status</option>
                     <option value="status-aktif" <?= ($query['status'] ?? '') === 'aktif' ? 'selected' : '' ?>>Aktif</option>
                     <option value="status-selesai" <?= ($query['status'] ?? '') === 'selesai' ? 'selected' : '' ?>>Selesai</option>
                     <option value="status-dibatalkan" <?= ($query['status'] ?? '') === 'dibatalkan' ? 'selected' : '' ?>>Dibatalkan</option>
-                    <option value="late-true" <?= ($query['is_late'] ?? '') === 'true' ? 'selected' : '' ?>>Terlambat</option>
-                    <option value="late-false" <?= ($query['is_late'] ?? '') === 'false' ? 'selected' : '' ?>>Tepat Waktu</option>
                 </select>
                 <?php if ($hasFilters): ?>
                     <a href="<?= site_url('admin/loans') ?>" class="w-full sm:w-auto px-3 py-2.5 text-center bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">Reset</a>
@@ -121,24 +116,16 @@ $statusBadge = static function (array $loan): string {
                                     <p class="text-xs text-gray-500 dark:text-gray-400">SN: <?= esc($loan['barang']['nomor_seri']) ?></p>
                                 </td>
                                 <td class="px-6 py-4 text-gray-700 dark:text-gray-300 text-xs"><?= esc($fmt($loan['tanggal_pinjam'])) ?></td>
-                                <td class="px-6 py-4 text-xs">
-                                    <p class="text-gray-700 dark:text-gray-300"><?= esc($fmt($loan['tanggal_kembali_rencana'])) ?></p>
-                                    <?php if ($loan['tanggal_kembali_aktual']): ?>
-                                        <p class="text-[10px] <?= $loan['is_late'] ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' ?>">Aktual: <?= esc($fmt($loan['tanggal_kembali_aktual'])) ?></p>
-                                    <?php endif ?>
-                                </td>
+                                <td class="px-6 py-4 text-gray-700 dark:text-gray-300 text-xs"><?= esc($fmt($loan['tanggal_kembali_aktual'])) ?></td>
                                 <td class="px-6 py-4"><?= $statusBadge($loan) ?></td>
-                                <td class="px-6 py-4">
-                                    <?php if ($loan['is_late']): ?>
-                                        <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-500/10 dark:text-red-400 rounded">Terlambat</span>
-                                    <?php elseif ($loan['status_peminjaman'] === 'selesai'): ?>
-                                        <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-500/10 dark:text-green-400 rounded">Tepat Waktu</span>
-                                    <?php else: ?>
-                                        <span class="text-gray-500">-</span>
-                                    <?php endif ?>
-                                </td>
+                                <td class="px-6 py-4 text-xs text-gray-600 dark:text-gray-300"><?= esc($loan['keperluan'] ?: '-') ?></td>
                                 <td class="px-6 py-4 text-center sticky right-0 bg-white dark:bg-gray-800">
-                                    <a href="<?= site_url('peminjaman/detail/' . $loan['id']) ?>" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/50 rounded-lg">Detail</a>
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        <?php if ($loan['status_peminjaman'] === 'aktif'): ?>
+                                            <a href="<?= site_url('peminjaman/return/' . $loan['id']) ?>" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/50 rounded-lg">Kembalikan</a>
+                                        <?php endif ?>
+                                        <a href="<?= site_url('peminjaman/detail/' . $loan['id']) ?>" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/50 rounded-lg">Detail</a>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach ?>
@@ -167,17 +154,7 @@ $statusBadge = static function (array $loan): string {
 <script>
 function handleLoanFilter(value) {
     const statusInput = document.getElementById('statusFilter');
-    const lateInput = document.getElementById('lateFilter');
-    if (!value) {
-        statusInput.value = '';
-        lateInput.value = '';
-    } else if (value.startsWith('status-')) {
-        statusInput.value = value.replace('status-', '');
-        lateInput.value = '';
-    } else if (value.startsWith('late-')) {
-        lateInput.value = value.replace('late-', '');
-        statusInput.value = '';
-    }
+    statusInput.value = value ? value.replace('status-', '') : '';
     document.getElementById('unifiedFilter').closest('form').submit();
 }
 </script>

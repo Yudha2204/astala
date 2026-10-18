@@ -11,14 +11,21 @@ $statusBadge = match ($peminjaman['status_peminjaman']) {
 ?>
 
 <div class="space-y-6">
-    <div class="flex items-center gap-4">
-        <a href="javascript:history.back()" class="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-            <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-        </a>
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Detail Peminjaman</h1>
-            <p class="text-gray-500 dark:text-gray-400">#<?= esc($peminjaman['id']) ?></p>
+    <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <a href="javascript:history.back()" class="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Detail Peminjaman</h1>
+                <p class="text-gray-500 dark:text-gray-400">#<?= esc($peminjaman['id']) ?></p>
+            </div>
         </div>
+        <?php if ($peminjaman['status_peminjaman'] === 'aktif'): ?>
+            <a href="<?= site_url('peminjaman/return/' . $peminjaman['id']) ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 shadow-sm">
+                Kembalikan Barang
+            </a>
+        <?php endif ?>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -39,9 +46,6 @@ $statusBadge = match ($peminjaman['status_peminjaman']) {
         <section class="lg:col-span-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm h-full">
             <div class="flex flex-wrap gap-2 mb-6">
                 <?= $statusBadge ?>
-                <?php if ($peminjaman['is_late']): ?>
-                    <span class="px-3 py-1.5 text-sm font-medium bg-red-50 text-red-600 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/50 rounded-lg">Terlambat</span>
-                <?php endif ?>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -65,17 +69,11 @@ $statusBadge = match ($peminjaman['status_peminjaman']) {
                     <p class="text-xs text-gray-500 uppercase mb-1">Tanggal Pinjam</p>
                     <p class="text-gray-900 dark:text-white"><?= esc($fmt($peminjaman['tanggal_pinjam'])) ?></p>
                 </div>
-                <?php if ($peminjaman['tanggal_kembali_rencana']): ?>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase mb-1">Deadline Kembali</p>
-                        <p class="text-gray-900 dark:text-white"><?= esc($fmt($peminjaman['tanggal_kembali_rencana'])) ?></p>
-                    </div>
-                <?php endif ?>
                 <?php if ($peminjaman['tanggal_kembali_aktual']): ?>
                     <div>
                         <p class="text-xs text-gray-500 uppercase mb-1">Tanggal Dikembalikan</p>
-                        <p class="<?= $peminjaman['is_late'] ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' ?>">
-                            <?= esc($fmt($peminjaman['tanggal_kembali_aktual'])) ?><?= $peminjaman['is_late'] ? ' (Terlambat)' : '' ?>
+                        <p class="text-green-600 dark:text-green-400 font-medium">
+                            <?= esc($fmt($peminjaman['tanggal_kembali_aktual'])) ?>
                         </p>
                     </div>
                 <?php endif ?>

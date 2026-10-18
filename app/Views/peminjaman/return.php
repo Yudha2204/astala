@@ -3,12 +3,11 @@
 <?php
 $fmt = static fn ($date): string => $date ? date('d M Y H:i', strtotime($date)) : '-';
 $image = ! empty($peminjaman['barang']['fotos'][0]['foto_path']) ? base_url(ltrim($peminjaman['barang']['fotos'][0]['foto_path'], '/')) : null;
-$isLate = strtotime((string) $peminjaman['tanggal_kembali_rencana']) < time();
 ?>
 
 <div class="space-y-6">
     <div class="flex items-center gap-4">
-        <a href="<?= site_url('peminjaman/current') ?>" class="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+        <a href="<?= site_url('peminjaman/history') ?>" class="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
             <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
         </a>
         <div>
@@ -32,15 +31,8 @@ $isLate = strtotime((string) $peminjaman['tanggal_kembali_rencana']) < time();
                     </div>
                     <div class="border-t border-gray-200 dark:border-gray-700 pt-3 space-y-2 text-sm">
                         <div class="flex justify-between gap-3"><span class="text-gray-500">Dipinjam:</span><span class="text-gray-700 dark:text-gray-300 text-right"><?= esc($fmt($peminjaman['tanggal_pinjam'])) ?></span></div>
-                        <div class="flex justify-between gap-3"><span class="text-gray-500">Deadline:</span><span class="text-gray-700 dark:text-gray-300 text-right"><?= esc($fmt($peminjaman['tanggal_kembali_rencana'])) ?></span></div>
                         <div class="flex justify-between gap-3"><span class="text-gray-500">Lokasi:</span><span class="text-gray-700 dark:text-gray-300 text-right"><?= esc($peminjaman['lokasi_peminjaman']) ?></span></div>
                     </div>
-                    <?php if ($isLate): ?>
-                        <div class="bg-red-50 border border-red-200 dark:bg-red-500/10 dark:border-red-500/30 rounded-lg p-3 text-center">
-                            <p class="text-red-600 dark:text-red-400 font-medium">Terlambat</p>
-                            <p class="text-sm text-red-500 dark:text-red-300">Pengembalian melebihi batas waktu</p>
-                        </div>
-                    <?php endif ?>
                 </div>
             </div>
         </aside>
@@ -81,7 +73,7 @@ $isLate = strtotime((string) $peminjaman['tanggal_kembali_rencana']) < time();
 
                 <div class="flex gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <button type="submit" class="flex-1 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 shadow-lg shadow-blue-500/25">Konfirmasi Pengembalian</button>
-                    <a href="<?= site_url('peminjaman/current') ?>" class="px-6 py-3 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">Batal</a>
+                    <a href="<?= site_url('peminjaman/history') ?>" class="px-6 py-3 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">Batal</a>
                 </div>
             </form>
         </div>

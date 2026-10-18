@@ -198,7 +198,28 @@ class PeminjamanController extends BaseController
 
     public function returnForm(int $id)
     {
-        return redirect()->to('/peminjaman/current')->with('error', 'Fitur pengembalian barang sudah tidak digunakan');
+        $user = session('user');
+        $peminjaman = $this->loanDetail($id);
+
+        if (! $peminjaman) {
+            return redirect()->to('/peminjaman/history')->with('error', 'Peminjaman tidak ditemukan');
+        }
+
+        $role = $user['role'] ?? '';
+        $canReturn = in_array($role, ['admin', 'pj_gudang'], true) || (int) $peminjaman['user_id'] === (int) ($user['id'] ?? 0);
+        if (! $canReturn) {
+            return redirect()->to('/peminjaman/history')->with('error', 'Anda tidak memiliki akses untuk mengembalikan peminjaman ini');
+        }
+
+        if ($peminjaman['status_peminjaman'] !== 'aktif') {
+            return redirect()->to('/peminjaman/history')->with('error', 'Barang ini sudah dikembalikan atau dibatalkan');
+        }
+
+        return view('peminjaman/return', [
+            'title' => 'Pengembalian Barang - ASTALA',
+            'user' => $user,
+            'peminjaman' => $peminjaman,
+        ]);
     }
 
     public function returnItem(int $id)
@@ -207,57 +228,96 @@ class PeminjamanController extends BaseController
         $barcodeDetected = trim((string) $this->request->getPost('barcode_detected')) ?: null;
         $peminjaman = $this->loanDetail($id);
 
-        if (! $peminjaman || (int) $peminjaman['user_id'] !== (int) ($user['id'] ?? 0)) {
-            return redirect()->to('/peminjaman/current')->with('error', 'Peminjaman tidak ditemukan');
+        if (! $peminjaman) {
+            return redirect()->to('/peminjaman/history')->with('error', 'Peminjaman tidak ditemukan');
+        }
+
+        $role = $user['role'] ?? '';
+        $canReturn = in_array($role, ['admin', 'pj_gudang'], true) || (int) $peminjaman['user_id'] === (int) ($user['id'] ?? 0);
+        if (! $canReturn) {
+            return redirect()->to('/peminjaman/history')->with('error', 'Anda tidak memiliki akses untuk mengembalikan peminjaman ini');
+        }
+
+        if ($peminjaman['status_peminjaman'] !== 'aktif') {
+            return redirect()->to('/peminjaman/history')->with('error', 'Barang ini sudah dikembalikan atau dibatalkan');
         }
 
         if ($barcodeDetected && $barcodeDetected !== $peminjaman['barang']['nomor_seri']) {
-            return redirect()->to('/peminjaman/return/' . $id)->with('error', 'Barcode tidak cocok dengan barang yang dipinjam');
+            return redirect()->to('/peminjaman/return/' . $id)->with('error', 'Nomor seri atau barcode tidak cocok dengan barang yang dipinjam');
         }
 
-        $now = new DateTimeImmutable();
-        $isLate = $this->isPast($peminjaman['tanggal_kembali_rencana'], $now);
+        $now = date('Y-m-d H:i:s');
         $db = db_connect();
         $db->transStart();
 
         try {
             (new PeminjamanModel())->update($id, [
-                'tanggal_kembali_aktual' => $now->format('Y-m-d H:i:s'),
+                'tanggal_kembali_aktual' => $now,
                 'status_peminjaman' => 'selesai',
-                'is_late' => $isLate ? 1 : 0,
+                'is_late' => 0,
             ]);
 
             (new BarangModel())->update((int) $peminjaman['barang_id'], ['status_ketersediaan' => 'tersedia']);
             $this->savePhotos($id, 'kembali', $barcodeDetected);
-            $this->logActivity('KEMBALI_BARANG', 'Mengembalikan barang: ' . $peminjaman['barang']['nama_barang'] . ($isLate ? ' (TERLAMBAT)' : ''), 'peminjaman', $id);
+            $this->logActivity('KEMBALI_BARANG', 'Mengembalikan barang: ' . $peminjaman['barang']['nama_barang'], 'peminjaman', $id);
 
             $db->transComplete();
 
-            return redirect()->to('/peminjaman/history')->with('success', 'Barang berhasil dikembalikan' . ($isLate ? '. Catatan: pengembalian terlambat.' : ''));
+            return redirect()->to('/peminjaman/history')->with('success', 'Barang berhasil dikembalikan');
         } catch (Throwable $e) {
             $db->transRollback();
             log_message('error', 'Return error: {message}', ['message' => $e->getMessage()]);
 
-            return redirect()->to('/peminjaman/current')->with('error', 'Terjadi kesalahan saat mengembalikan barang');
+            return redirect()->to('/peminjaman/history')->with('error', 'Terjadi kesalahan saat mengembalikan barang');
         }
     }
 
     public function history()
     {
         $user = session('user');
-        $page = max(1, (int) ($this->request->getGet('page') ?? 1));
-        $where = ['p.user_id' => $user['id'] ?? 0];
-        if ($barangId = trim((string) $this->request->getGet('barang_id'))) {
-            $where['p.barang_id'] = $barangId;
+        $query = [
+            'barang_id' => trim((string) $this->request->getGet('barang_id')),
+            'status' => trim((string) $this->request->getGet('status')),
+            'search' => trim((string) $this->request->getGet('search')),
+            'page' => max(1, (int) ($this->request->getGet('page') ?? 1)),
+        ];
+
+        $builder = $this->loanBaseBuilder()->where('p.user_id', $user['id'] ?? 0);
+        if ($query['barang_id'] !== '') {
+            $builder->where('p.barang_id', $query['barang_id']);
         }
-        $total = $this->loanCount($where);
-        $loans = $this->loanRows($where, self::HISTORY_PER_PAGE, ($page - 1) * self::HISTORY_PER_PAGE, 'p.created_at DESC');
+        if ($query['status'] !== '') {
+            $builder->where('p.status_peminjaman', $query['status']);
+        }
+        if ($query['search'] !== '') {
+            $builder->groupStart()
+                ->like('b.nama_barang', $query['search'])
+                ->orLike('b.nomor_seri', $query['search'])
+                ->orLike('p.keperluan', $query['search'])
+                ->groupEnd();
+        }
+
+        $total = $builder->countAllResults(false);
+        $loans = $builder
+            ->orderBy('p.created_at', 'DESC')
+            ->limit(self::HISTORY_PER_PAGE, ($query['page'] - 1) * self::HISTORY_PER_PAGE)
+            ->get()
+            ->getResultArray();
+
+        $this->hydrateLoans($loans);
+
+        $barangs = (new BarangModel())
+            ->select('id, nama_barang, nomor_seri')
+            ->orderBy('nama_barang', 'ASC')
+            ->findAll();
 
         return view('peminjaman/history', [
             'title' => 'Riwayat Peminjaman - ASTALA',
             'user' => $user,
             'loans' => $loans,
-            'pagination' => $this->pagination($page, $total, self::HISTORY_PER_PAGE),
+            'barangs' => $barangs,
+            'query' => $query,
+            'pagination' => $this->pagination($query['page'], $total, self::HISTORY_PER_PAGE),
         ]);
     }
 
@@ -286,7 +346,6 @@ class PeminjamanController extends BaseController
     {
         $query = [
             'status' => trim((string) $this->request->getGet('status')),
-            'is_late' => trim((string) $this->request->getGet('is_late')),
             'barang_id' => trim((string) $this->request->getGet('barang_id')),
             'search' => trim((string) $this->request->getGet('search')),
             'page' => max(1, (int) ($this->request->getGet('page') ?? 1)),
@@ -395,12 +454,6 @@ class PeminjamanController extends BaseController
             $builder->where('p.status_peminjaman', $query['status']);
         }
 
-        if ($query['is_late'] === 'true') {
-            $builder->where('p.is_late', 1);
-        } elseif ($query['is_late'] === 'false') {
-            $builder->where('p.is_late', 0);
-        }
-
         if (!empty($query['barang_id'])) {
             $builder->where('p.barang_id', $query['barang_id']);
         }
@@ -410,6 +463,7 @@ class PeminjamanController extends BaseController
                 ->like('u.nama', $query['search'])
                 ->orLike('b.nama_barang', $query['search'])
                 ->orLike('b.nomor_seri', $query['search'])
+                ->orLike('p.keperluan', $query['search'])
                 ->groupEnd();
         }
     }

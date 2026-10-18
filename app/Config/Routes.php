@@ -46,6 +46,7 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
         $routes->post('return/(:num)', 'PeminjamanController::returnItem/$1');
         $routes->get('history', 'PeminjamanController::history');
         $routes->get('detail/(:num)', 'PeminjamanController::detail/$1');
+        $routes->get('export/pdf', 'ReportController::exportPDF/my-loans');
     });
 
     $routes->group('pengambilan', static function (RouteCollection $routes) {
